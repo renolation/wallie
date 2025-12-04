@@ -6,9 +6,10 @@ export const Categories: CollectionConfig = {
     useAsTitle: 'name',
     group: 'Core',
     defaultColumns: ['name', 'icon', 'color', 'createdAt'],
+    hidden: ({ user }) => user?.role !== 'admin',
   },
   access: {
-    // Categories are readable by all authenticated users
+    // All authenticated users can read categories
     read: ({ req: { user } }) => Boolean(user),
     // Only admins can create/update/delete categories
     create: ({ req: { user } }) => user?.role === 'admin',
@@ -26,7 +27,7 @@ export const Categories: CollectionConfig = {
       name: 'icon',
       type: 'text',
       admin: {
-        description: 'Icon name (e.g., "movie", "music", "cloud")',
+        description: 'Icon name (e.g., "play-circle", "music", "cloud")',
       },
     },
     {
@@ -34,14 +35,6 @@ export const Categories: CollectionConfig = {
       type: 'text',
       admin: {
         description: 'Hex color code (e.g., "#FF5733")',
-      },
-    },
-    {
-      name: 'isDefault',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: {
-        description: 'Pre-populated categories that come with the app',
       },
     },
   ],

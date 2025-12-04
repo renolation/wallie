@@ -6,6 +6,7 @@ export const Users: CollectionConfig = {
     useAsTitle: 'email',
     group: 'Core',
     defaultColumns: ['email', 'name', 'role', 'createdAt'],
+    hidden: ({ user }) => user?.role !== 'admin',
   },
   auth: true,
   fields: [

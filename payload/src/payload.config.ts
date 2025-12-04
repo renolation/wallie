@@ -21,6 +21,8 @@ import { PriceRecords } from './collections/PriceRecords'
 import { dashboardSummaryEndpoint } from './endpoints/dashboard-summary'
 import { runNotificationJobsEndpoint } from './endpoints/run-jobs'
 import { seedCategoriesEndpoint } from './endpoints/seed'
+import { exportDataEndpoint } from './endpoints/export'
+import { registerEndpoint } from './endpoints/auth'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -50,12 +52,16 @@ export default buildConfig({
     PriceRecords,
   ],
   endpoints: [
+    // Auth
+    registerEndpoint,
     // Dashboard
     dashboardSummaryEndpoint,
     // Jobs (for cron)
     runNotificationJobsEndpoint,
     // Seed data
     seedCategoriesEndpoint,
+    // User data export
+    exportDataEndpoint,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

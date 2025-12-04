@@ -4,6 +4,7 @@ import {
   recordPriceChangeHook,
   createInitialPriceRecordHook,
 } from '../hooks/subscriptions'
+import { autoLogoHook } from '../hooks/auto-logo'
 
 export const Subscriptions: CollectionConfig = {
   slug: 'subscriptions',
@@ -32,7 +33,7 @@ export const Subscriptions: CollectionConfig = {
     },
   },
   hooks: {
-    beforeChange: [calculateNextPaymentDateHook],
+    beforeChange: [calculateNextPaymentDateHook, autoLogoHook],
     afterChange: [recordPriceChangeHook, createInitialPriceRecordHook],
   },
   fields: [

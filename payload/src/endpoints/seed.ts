@@ -57,10 +57,7 @@ export const seedCategoriesEndpoint: Endpoint = {
         try {
           await req.payload.create({
             collection: 'categories',
-            data: {
-              ...category,
-              isDefault: true,
-            },
+            data: category,
           })
           results.created.push(category.name)
         } catch (err) {

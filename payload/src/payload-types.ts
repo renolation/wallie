@@ -211,17 +211,13 @@ export interface Category {
   id: number;
   name: string;
   /**
-   * Icon name (e.g., "movie", "music", "cloud")
+   * Icon name (e.g., "play-circle", "music", "cloud")
    */
   icon?: string | null;
   /**
    * Hex color code (e.g., "#FF5733")
    */
   color?: string | null;
-  /**
-   * Pre-populated categories that come with the app
-   */
-  isDefault?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -620,7 +616,6 @@ export interface CategoriesSelect<T extends boolean = true> {
   name?: T;
   icon?: T;
   color?: T;
-  isDefault?: T;
   updatedAt?: T;
   createdAt?: T;
 }
