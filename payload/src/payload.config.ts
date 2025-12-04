@@ -12,10 +12,8 @@ import { Media } from './collections/Media'
 import { Categories } from './collections/Categories'
 import { Subscriptions } from './collections/Subscriptions'
 import { Households } from './collections/Households'
-import { HouseholdMembers } from './collections/HouseholdMembers'
-import { SplitAssignments } from './collections/SplitAssignments'
+import { Members } from './collections/Members'
 import { Notifications } from './collections/Notifications'
-import { PriceRecords } from './collections/PriceRecords'
 
 // Endpoints
 import { dashboardSummaryEndpoint } from './endpoints/dashboard-summary'
@@ -43,13 +41,9 @@ export default buildConfig({
     Media,
     Categories,
     Subscriptions,
-    // Households (Phase 2, but schema ready)
     Households,
-    HouseholdMembers,
-    SplitAssignments,
-    // System
+    Members,
     Notifications,
-    PriceRecords,
   ],
   endpoints: [
     // Auth

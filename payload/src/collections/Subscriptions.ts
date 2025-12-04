@@ -1,57 +1,46 @@
 import type { CollectionConfig } from 'payload'
-import { calculateNextPaymentDateHook } from '../hooks/subscriptions'
-import { autoLogoHook } from '../hooks/auto-logo'
 
 export const Subscriptions: CollectionConfig = {
   slug: 'subscriptions',
   admin: {
     useAsTitle: 'name',
     group: 'Core',
-    defaultColumns: ['name', 'price', 'billingCycle', 'nextBillingDate', 'category'],
+    defaultColumns: ['name', 'amount', 'billingCycle', 'nextBillingDate', 'category'],
   },
   access: {
     read: ({ req: { user } }) => {
       if (!user) return false
-      if (user.role === 'admin') return true
-      return { user: { equals: user.id } }
+      if (user.roles?.includes('admin')) return true
+      return { owner: { equals: user.id } }
     },
     create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => {
       if (!user) return false
-      if (user.role === 'admin') return true
-      return { user: { equals: user.id } }
+      if (user.roles?.includes('admin')) return true
+      return { owner: { equals: user.id } }
     },
     delete: ({ req: { user } }) => {
       if (!user) return false
-      if (user.role === 'admin') return true
-      return { user: { equals: user.id } }
+      if (user.roles?.includes('admin')) return true
+      return { owner: { equals: user.id } }
     },
   },
-  hooks: {
-    beforeChange: [calculateNextPaymentDateHook, autoLogoHook],
-  },
   fields: [
-    // Owner (auto-set, hidden for non-admin)
+    // Owner
     {
-      name: 'user',
+      name: 'owner',
       type: 'relationship',
       relationTo: 'users',
       required: true,
       hasMany: false,
-      admin: {
-        condition: (data, siblingData, { user }) => user?.role === 'admin',
-      },
       defaultValue: ({ user }) => user?.id,
     },
 
-    // ===== BASIC INFO =====
+    // Basic Info
     {
       name: 'name',
       type: 'text',
       required: true,
-      admin: {
-        description: 'Subscription service name (e.g., Netflix, Spotify)',
-      },
     },
     {
       name: 'category',
@@ -62,37 +51,25 @@ export const Subscriptions: CollectionConfig = {
     {
       name: 'websiteUrl',
       type: 'text',
-      admin: {
-        description: 'Website URL for the subscription service',
-      },
     },
     {
       name: 'logo',
       type: 'text',
       admin: {
-        description: 'Logo URL - Click "Auto-fetch" to get logo automatically',
-        components: {
-          Field: '@/components/LogoField',
-        },
+        description: 'Logo URL',
       },
     },
     {
       name: 'description',
       type: 'textarea',
-      admin: {
-        description: 'Brief description of the subscription',
-      },
     },
 
-    // ===== PRICING =====
+    // Pricing
     {
-      name: 'price',
+      name: 'amount',
       type: 'number',
       required: true,
       min: 0,
-      admin: {
-        description: 'Regular price per billing cycle',
-      },
     },
     {
       name: 'currency',
@@ -110,35 +87,11 @@ export const Subscriptions: CollectionConfig = {
         { label: 'BRL (R$)', value: 'BRL' },
         { label: 'MXN (MX$)', value: 'MXN' },
         { label: 'VND (₫)', value: 'VND' },
-        { label: 'THB (฿)', value: 'THB' },
-        { label: 'SGD (S$)', value: 'SGD' },
-        { label: 'CHF (Fr)', value: 'CHF' },
-        { label: 'CNY (¥)', value: 'CNY' },
       ],
       defaultValue: 'USD',
     },
-    {
-      name: 'promoPrice',
-      type: 'number',
-      min: 0,
-      admin: {
-        description: 'Promotional/discounted price (if any)',
-      },
-    },
-    {
-      name: 'promoEndDate',
-      type: 'date',
-      admin: {
-        description: 'When the promotional price ends',
-        condition: (data) => data?.promoPrice != null && data?.promoPrice > 0,
-        date: {
-          pickerAppearance: 'dayOnly',
-          displayFormat: 'yyyy-MM-dd',
-        },
-      },
-    },
 
-    // ===== BILLING CYCLE =====
+    // Billing
     {
       name: 'billingCycle',
       type: 'select',
@@ -152,32 +105,38 @@ export const Subscriptions: CollectionConfig = {
       defaultValue: 'monthly',
     },
     {
-      name: 'repeatEvery',
+      name: 'frequency',
       type: 'number',
-      required: true,
       min: 1,
       defaultValue: 1,
       admin: {
-        description: 'Repeat every X cycles (e.g., every 1 month, every 3 months)',
-      },
-    },
-    {
-      name: 'isRecurring',
-      type: 'checkbox',
-      defaultValue: true,
-      label: 'Recurring Subscription',
-      admin: {
-        description: 'Does this subscription auto-renew?',
+        description: 'Every X billing cycles (e.g., every 3 months)',
       },
     },
 
-    // ===== DATES =====
+    // Promo
+    {
+      name: 'promoPrice',
+      type: 'number',
+      min: 0,
+    },
+    {
+      name: 'promoEndDate',
+      type: 'date',
+      admin: {
+        date: {
+          pickerAppearance: 'dayOnly',
+          displayFormat: 'yyyy-MM-dd',
+        },
+      },
+    },
+
+    // Dates
     {
       name: 'startDate',
       type: 'date',
       required: true,
       admin: {
-        description: 'When the subscription started',
         date: {
           pickerAppearance: 'dayOnly',
           displayFormat: 'yyyy-MM-dd',
@@ -188,30 +147,16 @@ export const Subscriptions: CollectionConfig = {
       name: 'nextBillingDate',
       type: 'date',
       admin: {
-        description: 'Calculated automatically based on billing cycle',
-        readOnly: true,
         date: {
           pickerAppearance: 'dayOnly',
           displayFormat: 'yyyy-MM-dd',
         },
       },
     },
-
-    // ===== FREE TRIAL =====
     {
-      name: 'freeTrialDays',
-      type: 'number',
-      min: 0,
-      admin: {
-        description: 'Free trial period in days (0 = no trial)',
-      },
-    },
-    {
-      name: 'trialEndDate',
+      name: 'freeTrialEndDate',
       type: 'date',
       admin: {
-        description: 'When the free trial ends',
-        condition: (data) => data?.freeTrialDays != null && data?.freeTrialDays > 0,
         date: {
           pickerAppearance: 'dayOnly',
           displayFormat: 'yyyy-MM-dd',
@@ -219,7 +164,18 @@ export const Subscriptions: CollectionConfig = {
       },
     },
 
-    // ===== TAGS & NOTES =====
+    // Settings
+    {
+      name: 'autoRenew',
+      type: 'checkbox',
+      defaultValue: true,
+    },
+
+    // Extra
+    {
+      name: 'notes',
+      type: 'textarea',
+    },
     {
       name: 'tags',
       type: 'array',
@@ -230,107 +186,53 @@ export const Subscriptions: CollectionConfig = {
         },
       ],
     },
+
+    // Reminder
     {
-      name: 'notes',
-      type: 'textarea',
+      name: 'reminderDate',
+      type: 'date',
       admin: {
-        description: 'Any additional notes',
+        description: 'When to send reminder',
+        date: {
+          pickerAppearance: 'dayOnly',
+          displayFormat: 'yyyy-MM-dd',
+        },
       },
     },
 
-    // ===== REMINDER =====
+    // Household
     {
-      name: 'reminder',
-      type: 'group',
-      admin: {
-        description: 'Reminder settings',
-      },
-      fields: [
-        {
-          name: 'enabled',
-          type: 'checkbox',
-          defaultValue: true,
-          label: 'Enable Reminder',
-        },
-        {
-          name: 'daysBefore',
-          type: 'number',
-          min: 1,
-          max: 30,
-          defaultValue: 3,
-          admin: {
-            description: 'Days before billing to remind',
-            condition: (data, siblingData) => siblingData?.enabled === true,
-          },
-        },
-      ],
+      name: 'household',
+      type: 'relationship',
+      relationTo: 'households',
+      hasMany: false,
     },
 
-    // ===== FAMILY SHARING (placeholder for later) =====
+    // Member Share
     {
-      name: 'familySharing',
+      name: 'memberShare',
       type: 'array',
       admin: {
-        description: 'Share subscription costs with family members',
+        description: 'Split subscription costs with members',
       },
       fields: [
         {
           name: 'member',
           type: 'relationship',
-          relationTo: 'users',
-          admin: {
-            description: 'Family member',
-          },
+          relationTo: 'members',
+          required: true,
         },
         {
-          name: 'amount',
+          name: 'sharePercentage',
           type: 'number',
           min: 0,
+          max: 100,
+          required: true,
           admin: {
-            description: 'Amount they pay',
+            description: 'Percentage of the subscription this member pays',
           },
         },
       ],
-    },
-
-    // ===== INTERNAL FIELDS (sidebar) =====
-    {
-      name: 'status',
-      type: 'select',
-      options: [
-        { label: 'Active', value: 'active' },
-        { label: 'Trial', value: 'trial' },
-        { label: 'Paused', value: 'paused' },
-        { label: 'Cancelled', value: 'cancelled' },
-        { label: 'Expired', value: 'expired' },
-      ],
-      defaultValue: 'active',
-      admin: {
-        position: 'sidebar',
-      },
-    },
-    {
-      name: 'notifiedForCurrentCycle',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: {
-        description: 'Notification sent for current cycle?',
-        position: 'sidebar',
-      },
-    },
-    {
-      name: 'source',
-      type: 'select',
-      options: [
-        { label: 'Manual', value: 'manual' },
-        { label: 'Screenshot Import', value: 'screenshot' },
-        { label: 'Email Import', value: 'email' },
-        { label: 'Voice Entry', value: 'voice' },
-      ],
-      defaultValue: 'manual',
-      admin: {
-        position: 'sidebar',
-      },
     },
   ],
   timestamps: true,

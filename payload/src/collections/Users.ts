@@ -5,29 +5,36 @@ export const Users: CollectionConfig = {
   admin: {
     useAsTitle: 'email',
     group: 'Core',
-    defaultColumns: ['email', 'name', 'role', 'createdAt'],
-    hidden: ({ user }) => user?.role !== 'admin',
+    defaultColumns: ['email', 'firstName', 'lastName', 'roles', 'createdAt'],
   },
   auth: true,
   fields: [
     {
-      name: 'name',
+      name: 'firstName',
       type: 'text',
     },
     {
-      name: 'role',
+      name: 'lastName',
+      type: 'text',
+    },
+    {
+      name: 'roles',
       type: 'select',
+      hasMany: true,
       options: [
         { label: 'Admin', value: 'admin' },
         { label: 'User', value: 'user' },
       ],
-      defaultValue: 'user',
+      defaultValue: ['user'],
       required: true,
     },
     {
-      name: 'avatar',
-      type: 'upload',
-      relationTo: 'media',
+      name: 'budget',
+      type: 'number',
+      min: 0,
+      admin: {
+        description: 'Monthly budget limit',
+      },
     },
     {
       name: 'currency',
@@ -43,6 +50,7 @@ export const Users: CollectionConfig = {
         { label: 'KRW (₩)', value: 'KRW' },
         { label: 'BRL (R$)', value: 'BRL' },
         { label: 'MXN (MX$)', value: 'MXN' },
+        { label: 'VND (₫)', value: 'VND' },
       ],
       defaultValue: 'USD',
     },
@@ -55,77 +63,9 @@ export const Users: CollectionConfig = {
       },
     },
     {
-      name: 'notificationPreferences',
-      type: 'group',
-      fields: [
-        {
-          name: 'renewalReminders',
-          type: 'checkbox',
-          defaultValue: true,
-          label: 'Renewal Reminders',
-        },
-        {
-          name: 'reminderDaysBefore',
-          type: 'number',
-          defaultValue: 3,
-          min: 1,
-          max: 30,
-          admin: {
-            description: 'Days before renewal to send reminder',
-          },
-        },
-        {
-          name: 'priceChangeAlerts',
-          type: 'checkbox',
-          defaultValue: true,
-          label: 'Price Change Alerts',
-        },
-        {
-          name: 'weeklyDigest',
-          type: 'checkbox',
-          defaultValue: false,
-          label: 'Weekly Spending Digest',
-        },
-        {
-          name: 'pushEnabled',
-          type: 'checkbox',
-          defaultValue: true,
-          label: 'Push Notifications',
-        },
-        {
-          name: 'emailEnabled',
-          type: 'checkbox',
-          defaultValue: true,
-          label: 'Email Notifications',
-        },
-      ],
-    },
-    {
-      name: 'deviceTokens',
-      type: 'array',
-      admin: {
-        description: 'FCM device tokens for push notifications',
-      },
-      fields: [
-        {
-          name: 'token',
-          type: 'text',
-          required: true,
-        },
-        {
-          name: 'platform',
-          type: 'select',
-          options: [
-            { label: 'iOS', value: 'ios' },
-            { label: 'Android', value: 'android' },
-            { label: 'Web', value: 'web' },
-          ],
-        },
-        {
-          name: 'lastUsed',
-          type: 'date',
-        },
-      ],
+      name: 'avatar',
+      type: 'upload',
+      relationTo: 'media',
     },
   ],
   timestamps: true,

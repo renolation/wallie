@@ -1,33 +1,47 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Where } from 'payload'
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
   admin: {
     useAsTitle: 'name',
     group: 'Core',
-    defaultColumns: ['name', 'icon', 'color', 'createdAt'],
-    hidden: ({ user }) => user?.role !== 'admin',
+    defaultColumns: ['name', 'color', 'isPublic', 'owner', 'createdAt'],
   },
   access: {
-    // All authenticated users can read categories
-    read: ({ req: { user } }) => Boolean(user),
-    // Only admins can create/update/delete categories
-    create: ({ req: { user } }) => user?.role === 'admin',
-    update: ({ req: { user } }) => user?.role === 'admin',
-    delete: ({ req: { user } }) => user?.role === 'admin',
+    read: ({ req: { user } }) => {
+      if (!user) return false
+      // Can read public categories or own categories
+      return {
+        or: [
+          { isPublic: { equals: true } },
+          { owner: { equals: user.id } },
+        ],
+      } as Where
+    },
+    create: ({ req: { user } }) => Boolean(user),
+    update: ({ req: { user } }) => {
+      if (!user) return false
+      if (user.roles?.includes('admin')) return true
+      return { owner: { equals: user.id } }
+    },
+    delete: ({ req: { user } }) => {
+      if (!user) return false
+      if (user.roles?.includes('admin')) return true
+      return { owner: { equals: user.id } }
+    },
   },
   fields: [
     {
       name: 'name',
       type: 'text',
       required: true,
-      unique: true,
     },
     {
-      name: 'icon',
-      type: 'text',
+      name: 'isPublic',
+      type: 'checkbox',
+      defaultValue: false,
       admin: {
-        description: 'Icon name (e.g., "play-circle", "music", "cloud")',
+        description: 'Make this category visible to all users',
       },
     },
     {
@@ -36,6 +50,13 @@ export const Categories: CollectionConfig = {
       admin: {
         description: 'Hex color code (e.g., "#FF5733")',
       },
+    },
+    {
+      name: 'owner',
+      type: 'relationship',
+      relationTo: 'users',
+      hasMany: false,
+      defaultValue: ({ user }) => user?.id,
     },
   ],
   timestamps: true,

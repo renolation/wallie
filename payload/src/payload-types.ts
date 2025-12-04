@@ -72,10 +72,8 @@ export interface Config {
     categories: Category;
     subscriptions: Subscription;
     households: Household;
-    'household-members': HouseholdMember;
-    'split-assignments': SplitAssignment;
+    members: Member;
     notifications: Notification;
-    'price-records': PriceRecord;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -88,10 +86,8 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     subscriptions: SubscriptionsSelect<false> | SubscriptionsSelect<true>;
     households: HouseholdsSelect<false> | HouseholdsSelect<true>;
-    'household-members': HouseholdMembersSelect<false> | HouseholdMembersSelect<true>;
-    'split-assignments': SplitAssignmentsSelect<false> | SplitAssignmentsSelect<true>;
+    members: MembersSelect<false> | MembersSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
-    'price-records': PriceRecordsSelect<false> | PriceRecordsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -136,36 +132,19 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
-  name?: string | null;
-  role: 'admin' | 'user';
-  avatar?: (number | null) | Media;
-  currency?: ('USD' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'AUD' | 'INR' | 'KRW' | 'BRL' | 'MXN') | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  roles: ('admin' | 'user')[];
+  /**
+   * Monthly budget limit
+   */
+  budget?: number | null;
+  currency?: ('USD' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'AUD' | 'INR' | 'KRW' | 'BRL' | 'MXN' | 'VND') | null;
   /**
    * IANA timezone (e.g., "America/New_York")
    */
   timezone?: string | null;
-  notificationPreferences?: {
-    renewalReminders?: boolean | null;
-    /**
-     * Days before renewal to send reminder
-     */
-    reminderDaysBefore?: number | null;
-    priceChangeAlerts?: boolean | null;
-    weeklyDigest?: boolean | null;
-    pushEnabled?: boolean | null;
-    emailEnabled?: boolean | null;
-  };
-  /**
-   * FCM device tokens for push notifications
-   */
-  deviceTokens?:
-    | {
-        token: string;
-        platform?: ('ios' | 'android' | 'web') | null;
-        lastUsed?: string | null;
-        id?: string | null;
-      }[]
-    | null;
+  avatar?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -211,13 +190,14 @@ export interface Category {
   id: number;
   name: string;
   /**
-   * Icon name (e.g., "play-circle", "music", "cloud")
+   * Make this category visible to all users
    */
-  icon?: string | null;
+  isPublic?: boolean | null;
   /**
    * Hex color code (e.g., "#FF5733")
    */
   color?: string | null;
+  owner?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -227,77 +207,29 @@ export interface Category {
  */
 export interface Subscription {
   id: number;
-  user?: (number | null) | User;
-  /**
-   * Subscription service name (e.g., Netflix, Spotify)
-   */
+  owner: number | User;
   name: string;
   category?: (number | null) | Category;
-  /**
-   * Website URL for the subscription service
-   */
   websiteUrl?: string | null;
   /**
-   * Logo URL - Click "Auto-fetch" to get logo automatically
+   * Logo URL
    */
   logo?: string | null;
-  /**
-   * Brief description of the subscription
-   */
   description?: string | null;
-  /**
-   * Regular price per billing cycle
-   */
-  price: number;
-  currency:
-    | 'USD'
-    | 'EUR'
-    | 'GBP'
-    | 'JPY'
-    | 'CAD'
-    | 'AUD'
-    | 'INR'
-    | 'KRW'
-    | 'BRL'
-    | 'MXN'
-    | 'VND'
-    | 'THB'
-    | 'SGD'
-    | 'CHF'
-    | 'CNY';
-  /**
-   * Promotional/discounted price (if any)
-   */
-  promoPrice?: number | null;
-  /**
-   * When the promotional price ends
-   */
-  promoEndDate?: string | null;
+  amount: number;
+  currency: 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'AUD' | 'INR' | 'KRW' | 'BRL' | 'MXN' | 'VND';
   billingCycle: 'daily' | 'weekly' | 'monthly' | 'yearly';
   /**
-   * Repeat every X cycles (e.g., every 1 month, every 3 months)
+   * Every X billing cycles (e.g., every 3 months)
    */
-  repeatEvery: number;
-  /**
-   * Does this subscription auto-renew?
-   */
-  isRecurring?: boolean | null;
-  /**
-   * When the subscription started
-   */
+  frequency?: number | null;
+  promoPrice?: number | null;
+  promoEndDate?: string | null;
   startDate: string;
-  /**
-   * Calculated automatically based on billing cycle
-   */
   nextBillingDate?: string | null;
-  /**
-   * Free trial period in days (0 = no trial)
-   */
-  freeTrialDays?: number | null;
-  /**
-   * When the free trial ends
-   */
-  trialEndDate?: string | null;
+  freeTrialEndDate?: string | null;
+  autoRenew?: boolean | null;
+  notes?: string | null;
   tags?:
     | {
         tag?: string | null;
@@ -305,41 +237,23 @@ export interface Subscription {
       }[]
     | null;
   /**
-   * Any additional notes
+   * When to send reminder
    */
-  notes?: string | null;
+  reminderDate?: string | null;
+  household?: (number | null) | Household;
   /**
-   * Reminder settings
+   * Split subscription costs with members
    */
-  reminder?: {
-    enabled?: boolean | null;
-    /**
-     * Days before billing to remind
-     */
-    daysBefore?: number | null;
-  };
-  /**
-   * Share subscription costs with family members
-   */
-  familySharing?:
+  memberShare?:
     | {
+        member: number | Member;
         /**
-         * Family member
+         * Percentage of the subscription this member pays
          */
-        member?: (number | null) | User;
-        /**
-         * Amount they pay
-         */
-        amount?: number | null;
+        sharePercentage: number;
         id?: string | null;
       }[]
     | null;
-  status?: ('active' | 'trial' | 'paused' | 'cancelled' | 'expired') | null;
-  /**
-   * Notification sent for current cycle?
-   */
-  notifiedForCurrentCycle?: boolean | null;
-  source?: ('manual' | 'screenshot' | 'email' | 'voice') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -350,66 +264,23 @@ export interface Subscription {
 export interface Household {
   id: number;
   name: string;
-  description?: string | null;
+  owner: number | User;
+  members?: (number | Member)[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "members".
+ */
+export interface Member {
+  id: number;
+  name: string;
   avatar?: (number | null) | Media;
-  owner?: (number | null) | User;
   /**
-   * Default currency for household subscriptions
+   * Budget limit for this member
    */
-  currency?: ('USD' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'AUD' | 'INR' | 'KRW' | 'BRL' | 'MXN') | null;
-  /**
-   * Shareable code to invite new members
-   */
-  inviteCode?: string | null;
-  /**
-   * When the invite code expires
-   */
-  inviteCodeExpiry?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "household-members".
- */
-export interface HouseholdMember {
-  id: number;
-  household: number | Household;
-  user: number | User;
-  role: 'owner' | 'admin' | 'member';
-  /**
-   * Display name within this household
-   */
-  nickname?: string | null;
-  joinedAt?: string | null;
-  invitedBy?: (number | null) | User;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "split-assignments".
- */
-export interface SplitAssignment {
-  id: number;
-  subscription: number | Subscription;
-  user: number | User;
-  /**
-   * Percentage of the subscription cost this user is responsible for
-   */
-  percentage: number;
-  /**
-   * Calculated amount in cents (percentage * subscription price / 100)
-   */
-  amount?: number | null;
-  /**
-   * Has this split been paid/settled for the current cycle?
-   */
-  isSettled?: boolean | null;
-  /**
-   * When this split was last settled
-   */
-  settledAt?: string | null;
+  budgetLimit?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -419,80 +290,12 @@ export interface SplitAssignment {
  */
 export interface Notification {
   id: number;
-  user: number | User;
-  type:
-    | 'renewal_reminder'
-    | 'price_change'
-    | 'trial_ending'
-    | 'payment_failed'
-    | 'household_invite'
-    | 'settlement_request'
-    | 'weekly_digest'
-    | 'system';
-  title: string;
-  body: string;
-  /**
-   * Related subscription (if applicable)
-   */
-  subscription?: (number | null) | Subscription;
-  /**
-   * Related household (if applicable)
-   */
-  household?: (number | null) | Household;
-  status: 'pending' | 'sent' | 'failed' | 'read';
-  priority?: ('low' | 'normal' | 'high') | null;
-  channels?: ('push' | 'email' | 'in_app')[] | null;
-  sentAt?: string | null;
-  readAt?: string | null;
-  /**
-   * Error message if notification failed to send
-   */
-  error?: string | null;
-  /**
-   * Additional data for the notification
-   */
-  metadata?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
-   * Deep link or URL to navigate when notification is tapped
-   */
-  actionUrl?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "price-records".
- */
-export interface PriceRecord {
-  id: number;
   subscription: number | Subscription;
-  /**
-   * Price in cents at the time of recording
-   */
-  price: number;
-  /**
-   * Previous price in cents (if changed)
-   */
-  previousPrice?: number | null;
-  currency: string;
-  /**
-   * Billing frequency (e.g., monthly, yearly, every 2 weeks)
-   */
-  frequency?: string | null;
-  recordedAt: string;
-  source?: ('user_update' | 'auto_detection' | 'import') | null;
-  /**
-   * Percentage change from previous price
-   */
-  changePercentage?: number | null;
+  user: number | User;
+  notificationDate: string;
+  sent?: boolean | null;
+  method: 'email' | 'sms' | 'push';
+  message?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -541,20 +344,12 @@ export interface PayloadLockedDocument {
         value: number | Household;
       } | null)
     | ({
-        relationTo: 'household-members';
-        value: number | HouseholdMember;
-      } | null)
-    | ({
-        relationTo: 'split-assignments';
-        value: number | SplitAssignment;
+        relationTo: 'members';
+        value: number | Member;
       } | null)
     | ({
         relationTo: 'notifications';
         value: number | Notification;
-      } | null)
-    | ({
-        relationTo: 'price-records';
-        value: number | PriceRecord;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -603,29 +398,13 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
-  name?: T;
-  role?: T;
-  avatar?: T;
+  firstName?: T;
+  lastName?: T;
+  roles?: T;
+  budget?: T;
   currency?: T;
   timezone?: T;
-  notificationPreferences?:
-    | T
-    | {
-        renewalReminders?: T;
-        reminderDaysBefore?: T;
-        priceChangeAlerts?: T;
-        weeklyDigest?: T;
-        pushEnabled?: T;
-        emailEnabled?: T;
-      };
-  deviceTokens?:
-    | T
-    | {
-        token?: T;
-        platform?: T;
-        lastUsed?: T;
-        id?: T;
-      };
+  avatar?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -667,8 +446,9 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface CategoriesSelect<T extends boolean = true> {
   name?: T;
-  icon?: T;
+  isPublic?: T;
   color?: T;
+  owner?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -677,46 +457,38 @@ export interface CategoriesSelect<T extends boolean = true> {
  * via the `definition` "subscriptions_select".
  */
 export interface SubscriptionsSelect<T extends boolean = true> {
-  user?: T;
+  owner?: T;
   name?: T;
   category?: T;
   websiteUrl?: T;
   logo?: T;
   description?: T;
-  price?: T;
+  amount?: T;
   currency?: T;
+  billingCycle?: T;
+  frequency?: T;
   promoPrice?: T;
   promoEndDate?: T;
-  billingCycle?: T;
-  repeatEvery?: T;
-  isRecurring?: T;
   startDate?: T;
   nextBillingDate?: T;
-  freeTrialDays?: T;
-  trialEndDate?: T;
+  freeTrialEndDate?: T;
+  autoRenew?: T;
+  notes?: T;
   tags?:
     | T
     | {
         tag?: T;
         id?: T;
       };
-  notes?: T;
-  reminder?:
-    | T
-    | {
-        enabled?: T;
-        daysBefore?: T;
-      };
-  familySharing?:
+  reminderDate?: T;
+  household?: T;
+  memberShare?:
     | T
     | {
         member?: T;
-        amount?: T;
+        sharePercentage?: T;
         id?: T;
       };
-  status?: T;
-  notifiedForCurrentCycle?: T;
-  source?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -726,40 +498,19 @@ export interface SubscriptionsSelect<T extends boolean = true> {
  */
 export interface HouseholdsSelect<T extends boolean = true> {
   name?: T;
-  description?: T;
-  avatar?: T;
   owner?: T;
-  currency?: T;
-  inviteCode?: T;
-  inviteCodeExpiry?: T;
+  members?: T;
   updatedAt?: T;
   createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "household-members_select".
+ * via the `definition` "members_select".
  */
-export interface HouseholdMembersSelect<T extends boolean = true> {
-  household?: T;
-  user?: T;
-  role?: T;
-  nickname?: T;
-  joinedAt?: T;
-  invitedBy?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "split-assignments_select".
- */
-export interface SplitAssignmentsSelect<T extends boolean = true> {
-  subscription?: T;
-  user?: T;
-  percentage?: T;
-  amount?: T;
-  isSettled?: T;
-  settledAt?: T;
+export interface MembersSelect<T extends boolean = true> {
+  name?: T;
+  avatar?: T;
+  budgetLimit?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -768,36 +519,12 @@ export interface SplitAssignmentsSelect<T extends boolean = true> {
  * via the `definition` "notifications_select".
  */
 export interface NotificationsSelect<T extends boolean = true> {
+  subscription?: T;
   user?: T;
-  type?: T;
-  title?: T;
-  body?: T;
-  subscription?: T;
-  household?: T;
-  status?: T;
-  priority?: T;
-  channels?: T;
-  sentAt?: T;
-  readAt?: T;
-  error?: T;
-  metadata?: T;
-  actionUrl?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "price-records_select".
- */
-export interface PriceRecordsSelect<T extends boolean = true> {
-  subscription?: T;
-  price?: T;
-  previousPrice?: T;
-  currency?: T;
-  frequency?: T;
-  recordedAt?: T;
-  source?: T;
-  changePercentage?: T;
+  notificationDate?: T;
+  sent?: T;
+  method?: T;
+  message?: T;
   updatedAt?: T;
   createdAt?: T;
 }
