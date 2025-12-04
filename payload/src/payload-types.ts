@@ -232,17 +232,21 @@ export interface Subscription {
    * Subscription service name (e.g., Netflix, Spotify)
    */
   name: string;
-  /**
-   * Click "Auto-fetch" to get logo from service name or URL
-   */
-  logoUrl?: string | null;
+  category?: (number | null) | Category;
   /**
    * Website URL for the subscription service
    */
-  url?: string | null;
-  category?: (number | null) | Category;
+  websiteUrl?: string | null;
   /**
-   * Price per billing cycle
+   * Logo URL - Click "Auto-fetch" to get logo automatically
+   */
+  logo?: string | null;
+  /**
+   * Brief description of the subscription
+   */
+  description?: string | null;
+  /**
+   * Regular price per billing cycle
    */
   price: number;
   currency:
@@ -262,60 +266,75 @@ export interface Subscription {
     | 'CHF'
     | 'CNY';
   /**
-   * Payment interval (e.g., every 1, 2, 3...)
+   * Promotional/discounted price (if any)
    */
-  paymentEvery: number;
-  frequency: 'days' | 'weeks' | 'months' | 'years';
-  autoRenew?: boolean | null;
-  status?: ('active' | 'paused' | 'cancelled' | 'trial') | null;
+  promoPrice?: number | null;
   /**
-   * When the free trial ends
+   * When the promotional price ends
    */
-  trialEndDate?: string | null;
+  promoEndDate?: string | null;
+  billingCycle: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  /**
+   * Repeat every X cycles (e.g., every 1 month, every 3 months)
+   */
+  repeatEvery: number;
+  /**
+   * Does this subscription auto-renew?
+   */
+  isRecurring?: boolean | null;
   /**
    * When the subscription started
    */
   startDate: string;
   /**
-   * Calculated automatically based on frequency
+   * Calculated automatically based on billing cycle
    */
-  nextPaymentDate?: string | null;
-  paymentMethod?:
-    | (
-        | 'credit_card'
-        | 'debit_card'
-        | 'paypal'
-        | 'bank_transfer'
-        | 'apple_pay'
-        | 'google_pay'
-        | 'crypto'
-        | 'gift_card'
-        | 'other'
-      )
-    | null;
+  nextBillingDate?: string | null;
   /**
-   * Who pays for this subscription
+   * Free trial period in days (0 = no trial)
    */
-  paidBy?: (number | null) | User;
+  freeTrialDays?: number | null;
   /**
-   * Household for split billing
+   * When the free trial ends
    */
-  household?: (number | null) | Household;
-  enableNotification?: boolean | null;
-  /**
-   * Days before payment to notify
-   */
-  notifyBefore?: number | null;
-  /**
-   * Any additional notes
-   */
-  notes?: string | null;
+  trialEndDate?: string | null;
   tags?:
     | {
         tag?: string | null;
         id?: string | null;
       }[]
     | null;
+  /**
+   * Any additional notes
+   */
+  notes?: string | null;
+  /**
+   * Reminder settings
+   */
+  reminder?: {
+    enabled?: boolean | null;
+    /**
+     * Days before billing to remind
+     */
+    daysBefore?: number | null;
+  };
+  /**
+   * Share subscription costs with family members
+   */
+  familySharing?:
+    | {
+        /**
+         * Family member
+         */
+        member?: (number | null) | User;
+        /**
+         * Amount they pay
+         */
+        amount?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  status?: ('active' | 'trial' | 'paused' | 'cancelled' | 'expired') | null;
   /**
    * Notification sent for current cycle?
    */
@@ -660,30 +679,42 @@ export interface CategoriesSelect<T extends boolean = true> {
 export interface SubscriptionsSelect<T extends boolean = true> {
   user?: T;
   name?: T;
-  logoUrl?: T;
-  url?: T;
   category?: T;
+  websiteUrl?: T;
+  logo?: T;
+  description?: T;
   price?: T;
   currency?: T;
-  paymentEvery?: T;
-  frequency?: T;
-  autoRenew?: T;
-  status?: T;
-  trialEndDate?: T;
+  promoPrice?: T;
+  promoEndDate?: T;
+  billingCycle?: T;
+  repeatEvery?: T;
+  isRecurring?: T;
   startDate?: T;
-  nextPaymentDate?: T;
-  paymentMethod?: T;
-  paidBy?: T;
-  household?: T;
-  enableNotification?: T;
-  notifyBefore?: T;
-  notes?: T;
+  nextBillingDate?: T;
+  freeTrialDays?: T;
+  trialEndDate?: T;
   tags?:
     | T
     | {
         tag?: T;
         id?: T;
       };
+  notes?: T;
+  reminder?:
+    | T
+    | {
+        enabled?: T;
+        daysBefore?: T;
+      };
+  familySharing?:
+    | T
+    | {
+        member?: T;
+        amount?: T;
+        id?: T;
+      };
+  status?: T;
   notifiedForCurrentCycle?: T;
   source?: T;
   updatedAt?: T;
