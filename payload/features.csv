@@ -1,0 +1,19 @@
+Feature Name,Category,Description,Backend Tech (Payload CMS),Frontend Tech (Flutter),Complexity
+🔐 User Auth,Core,"Login, Register, Forgot Password via Email.",Native users Collection (JWT).,http package (Store JWT in flutter_secure_storage).,🟢 Low
+📝 Manual Add,Core,"Form to add Name, Price, Cycle, First Date.",subscriptions Collection.,Standard Form & TextFormField widgets.,🟢 Low
+📋 Dashboard,Core,"List active subs sorted by ""Days Left"".",GET /api/subscriptions (sort query).,ListView.builder + RefreshIndicator.,🟢 Low
+🖼️ Auto-Logos,UX,Auto-fetch logo based on service name.,beforeChange hook (calls Clearbit/Favicon API).,CachedNetworkImage widget.,🟢 Low
+🔥 Trial Burner,Utility,Aggressive alarm before free trial ends.,None (Local logic).,Critical Alerts (Local Notifications).,🟢 Low
+🙈 Privacy Blur,UX,Shake phone to blur prices.,None.,BackdropFilter + sensors_plus (Shake detection).,🟢 Low
+📂 Data Export,Freedom,Download all data as JSON/CSV.,Custom Endpoint generates .csv.,file_saver or Share Sheet.,🟢 Low
+🏠 Households,Social,Group users into families/apartments.,households Collection + Access Control.,Toggle Switch (Provider state: Me vs. House).,🟡 Medium
+📅 Calendar Sync,Utility,Add renewal dates to phone's native calendar.,None (Data comes from existing API).,device_calendar or add_2_calendar package.,🟡 Medium
+🌍 Multi-Currency,Finance,"Support USD, EUR, VND with auto-conversion.",Cron Job (fetches FX rates daily) + Virtual Field.,Currency Formatter logic.,🟡 Medium
+🔔 Smart Alerts,Utility,Push notifs 1 day & 1 hour before renewal.,payload-plugin-cloud-messaging (FCM).,firebase_messaging + flutter_local_notifications.,🟡 Medium
+📉 Spend Trends,Analytics,Bar/Pie charts showing cost by Category.,Aggregation API (Group by category).,fl_chart package.,🟡 Medium
+🗣️ Voice Entry,AI,"""I added Netflix for $15"" -> Data.",OpenAI Whisper API integration.,speech_to_text or Audio Recorder.,🟡 Medium
+🤝 Split Bills,Social,Assign % of a bill to another user/roommate.,splitShares Array + afterRead hook to calc cost.,UI to select users from households list.,🔴 High
+📸 OCR Scanner,AI,Scan screenshot to auto-fill subscription form.,API Endpoint to proxy OpenAI/Gemini request.,google_mlkit_text_recognition + Camera.,🔴 High
+📧 Email Parser,Auto,Forward receipts to save@app.com to add data.,Custom Endpoint (receives Webhook from Postmark).,None (Backend only feature).,🔴 High
+📈 Price Watch,Intel,Warn if user pays less/more than market rate.,Cron Job (Scrapes prices weekly).,Warning Card Widget in Dashboard.,🔴 High
+✈️ Offline Mode,Tech,App works without internet.,Sync Endpoint (Last Updated > X).,hive or isar (Local Database).,🔴 High

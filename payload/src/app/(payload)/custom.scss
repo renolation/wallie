@@ -1,0 +1,116 @@
+// Custom Payload Admin Styles - Larger UI
+
+// Increase base font size (scales everything)
+:root {
+  --base-body-font-size: 16px; // Default is 13px
+  --font-body-size: 16px;
+}
+
+// Larger form fields
+.field-type {
+  margin-bottom: 24px;
+
+  label {
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="url"],
+textarea,
+select {
+  font-size: 16px !important;
+  padding: 12px 14px !important;
+  min-height: 48px;
+}
+
+textarea {
+  min-height: 120px;
+}
+
+// Larger buttons
+.btn {
+  font-size: 15px !important;
+  padding: 12px 20px !important;
+  min-height: 44px;
+}
+
+// Wider content area
+.template-default__wrap {
+  max-width: 1400px;
+}
+
+// Larger sidebar
+.nav {
+  width: 280px;
+
+  .nav-group__toggle,
+  .nav__link {
+    font-size: 15px;
+    padding: 12px 20px;
+  }
+}
+
+// Larger table rows
+.table {
+  font-size: 15px;
+
+  td,
+  th {
+    padding: 14px 16px;
+  }
+}
+
+// Larger collection list items
+.collection-list__item {
+  padding: 16px;
+}
+
+// Larger document header
+.doc-header {
+  padding: 24px 0;
+
+  h1 {
+    font-size: 28px;
+  }
+}
+
+// Larger card components
+.card {
+  padding: 20px;
+}
+
+// Relationship field
+.relationship-add-new,
+.relationship--single-value {
+  min-height: 48px;
+}
+
+// Select dropdowns
+.rs__control {
+  min-height: 48px !important;
+  font-size: 16px !important;
+}
+
+// Date picker
+.react-datepicker__input-container input {
+  font-size: 16px !important;
+  padding: 12px 14px !important;
+}
+
+// Checkbox/Radio larger
+input[type="checkbox"],
+input[type="radio"] {
+  width: 20px;
+  height: 20px;
+}
+
+// Upload field
+.upload__dropzone {
+  padding: 40px;
+  font-size: 15px;
+}
