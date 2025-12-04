@@ -11,10 +11,9 @@ export const Subscriptions: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     group: 'Core',
-    defaultColumns: ['name', 'price', 'billingCycle', 'nextPaymentDate', 'user'],
+    defaultColumns: ['name', 'price', 'frequency', 'nextPaymentDate', 'category'],
   },
   access: {
-    // Users can only read their own subscriptions
     read: ({ req: { user } }) => {
       if (!user) return false
       if (user.role === 'admin') return true
@@ -37,6 +36,7 @@ export const Subscriptions: CollectionConfig = {
     afterChange: [recordPriceChangeHook, createInitialPriceRecordHook],
   },
   fields: [
+    // Owner (auto-set, hidden for non-admin)
     {
       name: 'user',
       type: 'relationship',
@@ -48,39 +48,54 @@ export const Subscriptions: CollectionConfig = {
       },
       defaultValue: ({ user }) => user?.id,
     },
+
+    // Basic Info
     {
       name: 'name',
       type: 'text',
       required: true,
-    },
-    {
-      name: 'description',
-      type: 'textarea',
-    },
-    {
-      name: 'logo',
-      type: 'upload',
-      relationTo: 'media',
+      admin: {
+        description: 'Subscription service name (e.g., Netflix, Spotify)',
+      },
     },
     {
       name: 'logoUrl',
       type: 'text',
       admin: {
-        description: 'External logo URL (fallback if no uploaded logo)',
+        description: 'Click "Auto-fetch" to get logo from service name or URL',
+        components: {
+          Field: '@/components/LogoField',
+        },
       },
     },
+    {
+      name: 'url',
+      type: 'text',
+      admin: {
+        description: 'Website URL for the subscription service',
+      },
+    },
+    {
+      name: 'category',
+      type: 'relationship',
+      relationTo: 'categories',
+      hasMany: false,
+    },
+
+    // Pricing
     {
       name: 'price',
       type: 'number',
       required: true,
       min: 0,
       admin: {
-        description: 'Price in cents (e.g., 999 = $9.99)',
+        description: 'Price per billing cycle',
       },
     },
     {
       name: 'currency',
       type: 'select',
+      required: true,
       options: [
         { label: 'USD ($)', value: 'USD' },
         { label: 'EUR (€)', value: 'EUR' },
@@ -92,37 +107,46 @@ export const Subscriptions: CollectionConfig = {
         { label: 'KRW (₩)', value: 'KRW' },
         { label: 'BRL (R$)', value: 'BRL' },
         { label: 'MXN (MX$)', value: 'MXN' },
+        { label: 'VND (₫)', value: 'VND' },
+        { label: 'THB (฿)', value: 'THB' },
+        { label: 'SGD (S$)', value: 'SGD' },
+        { label: 'CHF (Fr)', value: 'CHF' },
+        { label: 'CNY (¥)', value: 'CNY' },
       ],
       defaultValue: 'USD',
     },
+
+    // Billing Frequency
     {
-      name: 'billingCycle',
+      name: 'paymentEvery',
+      type: 'number',
+      required: true,
+      min: 1,
+      defaultValue: 1,
+      admin: {
+        description: 'Payment interval (e.g., every 1, 2, 3...)',
+      },
+    },
+    {
+      name: 'frequency',
       type: 'select',
       required: true,
       options: [
-        { label: 'Weekly', value: 'weekly' },
-        { label: 'Monthly', value: 'monthly' },
-        { label: 'Quarterly', value: 'quarterly' },
-        { label: 'Yearly', value: 'yearly' },
+        { label: 'Day(s)', value: 'days' },
+        { label: 'Week(s)', value: 'weeks' },
+        { label: 'Month(s)', value: 'months' },
+        { label: 'Year(s)', value: 'years' },
       ],
-      defaultValue: 'monthly',
+      defaultValue: 'months',
     },
     {
-      name: 'firstPaymentDate',
-      type: 'date',
-      required: true,
-      admin: {
-        description: 'When the first payment was/will be made',
-      },
+      name: 'autoRenew',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'Auto Renewal',
     },
-    {
-      name: 'nextPaymentDate',
-      type: 'date',
-      admin: {
-        description: 'Calculated automatically based on billing cycle',
-        readOnly: true,
-      },
-    },
+
+    // Status
     {
       name: 'status',
       type: 'select',
@@ -142,20 +166,48 @@ export const Subscriptions: CollectionConfig = {
         description: 'When the free trial ends',
       },
     },
+
+    // Dates
     {
-      name: 'category',
-      type: 'relationship',
-      relationTo: 'categories',
-      hasMany: false,
+      name: 'startDate',
+      type: 'date',
+      required: true,
+      admin: {
+        description: 'When the subscription started',
+        date: {
+          pickerAppearance: 'dayOnly',
+          displayFormat: 'yyyy-MM-dd',
+        },
+      },
     },
     {
-      name: 'household',
-      type: 'relationship',
-      relationTo: 'households',
-      hasMany: false,
+      name: 'nextPaymentDate',
+      type: 'date',
       admin: {
-        description: 'Household this subscription belongs to (for split billing)',
+        description: 'Calculated automatically based on frequency',
+        readOnly: true,
+        date: {
+          pickerAppearance: 'dayOnly',
+          displayFormat: 'yyyy-MM-dd',
+        },
       },
+    },
+
+    // Payment Info
+    {
+      name: 'paymentMethod',
+      type: 'select',
+      options: [
+        { label: 'Credit Card', value: 'credit_card' },
+        { label: 'Debit Card', value: 'debit_card' },
+        { label: 'PayPal', value: 'paypal' },
+        { label: 'Bank Transfer', value: 'bank_transfer' },
+        { label: 'Apple Pay', value: 'apple_pay' },
+        { label: 'Google Pay', value: 'google_pay' },
+        { label: 'Crypto', value: 'crypto' },
+        { label: 'Gift Card', value: 'gift_card' },
+        { label: 'Other', value: 'other' },
+      ],
     },
     {
       name: 'paidBy',
@@ -163,19 +215,47 @@ export const Subscriptions: CollectionConfig = {
       relationTo: 'users',
       hasMany: false,
       admin: {
-        description: 'Who actually pays the bill (for split households)',
+        description: 'Who pays for this subscription',
       },
+    },
+
+    // Household (for split billing)
+    {
+      name: 'household',
+      type: 'relationship',
+      relationTo: 'households',
+      hasMany: false,
+      admin: {
+        description: 'Household for split billing',
+      },
+    },
+
+    // Notifications
+    {
+      name: 'enableNotification',
+      type: 'checkbox',
+      defaultValue: true,
+      label: 'Enable Notifications',
     },
     {
-      name: 'website',
-      type: 'text',
+      name: 'notifyBefore',
+      type: 'number',
+      min: 1,
+      max: 30,
+      defaultValue: 3,
       admin: {
-        description: 'Website URL for the subscription service',
+        description: 'Days before payment to notify',
+        condition: (data) => data?.enableNotification === true,
       },
     },
+
+    // Additional Info
     {
       name: 'notes',
       type: 'textarea',
+      admin: {
+        description: 'Any additional notes',
+      },
     },
     {
       name: 'tags',
@@ -187,42 +267,29 @@ export const Subscriptions: CollectionConfig = {
         },
       ],
     },
-    {
-      name: 'source',
-      type: 'select',
-      options: [
-        { label: 'Manual', value: 'manual' },
-        { label: 'Screenshot Import', value: 'screenshot_import' },
-        { label: 'Email Import', value: 'email_import' },
-        { label: 'Voice Entry', value: 'voice_entry' },
-      ],
-      defaultValue: 'manual',
-      admin: {
-        description: 'How this subscription was added',
-      },
-    },
+
+    // Internal fields (sidebar)
     {
       name: 'notifiedForCurrentCycle',
       type: 'checkbox',
       defaultValue: false,
       admin: {
-        description: 'Has the renewal notification been sent for the current cycle?',
+        description: 'Notification sent for current cycle?',
         position: 'sidebar',
       },
     },
     {
-      name: 'autoRenew',
-      type: 'checkbox',
-      defaultValue: true,
+      name: 'source',
+      type: 'select',
+      options: [
+        { label: 'Manual', value: 'manual' },
+        { label: 'Screenshot Import', value: 'screenshot' },
+        { label: 'Email Import', value: 'email' },
+        { label: 'Voice Entry', value: 'voice' },
+      ],
+      defaultValue: 'manual',
       admin: {
-        description: 'Does this subscription auto-renew?',
-      },
-    },
-    {
-      name: 'cancellationUrl',
-      type: 'text',
-      admin: {
-        description: 'Direct link to cancel the subscription',
+        position: 'sidebar',
       },
     },
   ],

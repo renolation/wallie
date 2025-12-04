@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -143,9 +144,9 @@ export default function RegisterPage() {
 
         <p style={styles.footer}>
           Already have an account?{' '}
-          <a href="/admin" style={styles.link}>
+          <Link href="/admin" style={styles.link}>
             Sign in
-          </a>
+          </Link>
         </p>
       </div>
     </div>

@@ -88,7 +88,28 @@ const SERVICE_DOMAINS: Record<string, string> = {
 }
 
 /**
- * Get domain from service name
+ * Extract domain from URL
+ */
+function extractDomainFromUrl(url: string): string | null {
+  try {
+    // Handle URLs without protocol
+    let urlToParse = url.trim()
+    if (!urlToParse.startsWith('http://') && !urlToParse.startsWith('https://')) {
+      urlToParse = 'https://' + urlToParse
+    }
+
+    const parsed = new URL(urlToParse)
+    // Remove www. prefix if present
+    return parsed.hostname.replace(/^www\./, '')
+  } catch {
+    // Try regex as fallback
+    const match = url.match(/(?:https?:\/\/)?(?:www\.)?([a-z0-9-]+\.[a-z.]{2,})/i)
+    return match ? match[1] : null
+  }
+}
+
+/**
+ * Get domain from service name using known mappings
  */
 function getDomainFromName(name: string): string | null {
   const normalized = name.toLowerCase().trim()
@@ -105,79 +126,54 @@ function getDomainFromName(name: string): string | null {
     }
   }
 
-  // Try to extract domain if name looks like a URL or domain
-  const domainMatch = normalized.match(/(?:https?:\/\/)?(?:www\.)?([a-z0-9-]+\.[a-z]{2,})/i)
-  if (domainMatch) {
-    return domainMatch[1]
-  }
-
   return null
 }
 
 /**
- * Build logo URL using Clearbit Logo API (free, no API key needed)
- * Falls back to Google's favicon service
+ * Build logo URL using DuckDuckGo icons
  */
 function buildLogoUrl(domain: string): string {
-  // Clearbit Logo API - returns high quality logos (128px)
-  // Free tier: unlimited requests
-  return `https://logo.clearbit.com/${domain}`
-}
-
-/**
- * Build fallback favicon URL using Google's service
- */
-function buildFaviconUrl(domain: string): string {
-  return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
-}
-
-/**
- * Check if URL returns a valid image
- */
-async function isValidImageUrl(url: string): Promise<boolean> {
-  try {
-    const response = await fetch(url, { method: 'HEAD' })
-    const contentType = response.headers.get('content-type')
-    return response.ok && (contentType?.startsWith('image/') ?? false)
-  } catch {
-    return false
-  }
+  return `https://icons.duckduckgo.com/ip3/${domain}.ico`
 }
 
 /**
  * Auto-fetch logo hook for subscriptions
+ * Priority:
+ * 1. If logoUrl already set (non-empty), keep it
+ * 2. Try to get domain from user-entered URL field
+ * 3. Try to get domain from service name mapping
+ * 4. Fetch logo from Clearbit, fallback to Google Favicon
  */
 export const autoLogoHook: CollectionBeforeChangeHook = async ({ data, operation }) => {
-  // Only run on create or if name changed and no logo set
+  // Only run on create or update
   if (operation !== 'create' && operation !== 'update') {
     return data
   }
 
-  // Skip if logo is already uploaded or logoUrl is already set
-  if (data.logo || data.logoUrl) {
+  // Skip if logoUrl is already set by user (non-empty string)
+  if (data.logoUrl && data.logoUrl.trim() !== '') {
     return data
   }
 
-  // Skip if no name
-  if (!data.name) {
-    return data
+  let domain: string | null = null
+
+  // Priority 1: Try to extract domain from user-entered URL
+  if (data.url && data.url.trim() !== '') {
+    domain = extractDomainFromUrl(data.url)
   }
 
-  const domain = getDomainFromName(data.name)
+  // Priority 2: Try to get domain from service name mapping
+  if (!domain && data.name && data.name.trim() !== '') {
+    domain = getDomainFromName(data.name)
+  }
+
+  // If no domain found, skip
   if (!domain) {
     return data
   }
 
-  // Try Clearbit first
-  const clearbitUrl = buildLogoUrl(domain)
-  if (await isValidImageUrl(clearbitUrl)) {
-    data.logoUrl = clearbitUrl
-    return data
-  }
-
-  // Fall back to Google Favicon
-  const faviconUrl = buildFaviconUrl(domain)
-  data.logoUrl = faviconUrl
+  // Use DuckDuckGo icons - reliable and high quality
+  data.logoUrl = buildLogoUrl(domain)
 
   return data
 }

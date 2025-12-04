@@ -1,6 +1,25 @@
 import type { Endpoint } from 'payload'
 
 /**
+ * Format frequency for display
+ */
+function formatFrequency(paymentEvery: number, frequency: string): string {
+  if (paymentEvery === 1) {
+    switch (frequency) {
+      case 'days':
+        return 'daily'
+      case 'weeks':
+        return 'weekly'
+      case 'months':
+        return 'monthly'
+      case 'years':
+        return 'yearly'
+    }
+  }
+  return `every ${paymentEvery} ${frequency}`
+}
+
+/**
  * Data Export Endpoint
  * GET /api/export/data?format=json|csv
  *
@@ -32,18 +51,23 @@ export const exportDataEndpoint: Endpoint = {
       const exportData = subscriptions.docs.map((sub) => ({
         id: sub.id,
         name: sub.name,
-        description: sub.description || '',
+        logoUrl: sub.logoUrl || '',
+        url: sub.url || '',
         price: sub.price,
-        priceFormatted: `${(sub.price / 100).toFixed(2)}`,
         currency: sub.currency || 'USD',
-        billingCycle: sub.billingCycle,
-        status: sub.status,
-        category: typeof sub.category === 'object' ? sub.category?.name : '',
-        firstPaymentDate: sub.firstPaymentDate,
-        nextPaymentDate: sub.nextPaymentDate,
-        website: sub.website || '',
-        notes: sub.notes || '',
+        paymentEvery: sub.paymentEvery || 1,
+        frequency: sub.frequency || 'months',
+        frequencyLabel: formatFrequency(sub.paymentEvery || 1, sub.frequency || 'months'),
+        status: sub.status || 'active',
         autoRenew: sub.autoRenew,
+        category: typeof sub.category === 'object' ? sub.category?.name : '',
+        startDate: sub.startDate,
+        nextPaymentDate: sub.nextPaymentDate,
+        paymentMethod: sub.paymentMethod || '',
+        enableNotification: sub.enableNotification,
+        notifyBefore: sub.notifyBefore || 3,
+        notes: sub.notes || '',
+        tags: sub.tags?.map((t) => t.tag).join(', ') || '',
         createdAt: sub.createdAt,
         updatedAt: sub.updatedAt,
       }))
@@ -53,18 +77,23 @@ export const exportDataEndpoint: Endpoint = {
         const headers = [
           'ID',
           'Name',
-          'Description',
-          'Price (cents)',
+          'Logo URL',
+          'Website URL',
           'Price',
           'Currency',
+          'Payment Every',
+          'Frequency',
           'Billing Cycle',
           'Status',
-          'Category',
-          'First Payment Date',
-          'Next Payment Date',
-          'Website',
-          'Notes',
           'Auto Renew',
+          'Category',
+          'Start Date',
+          'Next Payment Date',
+          'Payment Method',
+          'Notifications',
+          'Notify Before (days)',
+          'Notes',
+          'Tags',
           'Created At',
           'Updated At',
         ]
@@ -75,18 +104,23 @@ export const exportDataEndpoint: Endpoint = {
             [
               row.id,
               `"${(row.name || '').replace(/"/g, '""')}"`,
-              `"${(row.description || '').replace(/"/g, '""')}"`,
+              `"${(row.logoUrl || '').replace(/"/g, '""')}"`,
+              `"${(row.url || '').replace(/"/g, '""')}"`,
               row.price,
-              row.priceFormatted,
               row.currency,
-              row.billingCycle,
+              row.paymentEvery,
+              row.frequency,
+              row.frequencyLabel,
               row.status,
-              `"${(row.category || '').replace(/"/g, '""')}"`,
-              row.firstPaymentDate || '',
-              row.nextPaymentDate || '',
-              `"${(row.website || '').replace(/"/g, '""')}"`,
-              `"${(row.notes || '').replace(/"/g, '""')}"`,
               row.autoRenew ? 'Yes' : 'No',
+              `"${(row.category || '').replace(/"/g, '""')}"`,
+              row.startDate || '',
+              row.nextPaymentDate || '',
+              row.paymentMethod,
+              row.enableNotification ? 'Yes' : 'No',
+              row.notifyBefore,
+              `"${(row.notes || '').replace(/"/g, '""')}"`,
+              `"${(row.tags || '').replace(/"/g, '""')}"`,
               row.createdAt,
               row.updatedAt,
             ].join(','),

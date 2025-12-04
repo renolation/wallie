@@ -1,32 +1,13 @@
-:root {
+/* Frontend-specific styles - scoped to .frontend-app */
+
+.frontend-app {
   --font-mono: 'Roboto Mono', monospace;
-}
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  font-size: 18px;
-  line-height: 32px;
-
-  background: rgb(0, 0, 0);
-  -webkit-font-smoothing: antialiased;
-}
-
-html,
-body,
-#app {
-  height: 100%;
-}
-
-body {
   font-family: system-ui;
   font-size: 18px;
   line-height: 32px;
-
-  margin: 0;
-  color: rgb(1000, 1000, 1000);
+  color: white;
+  min-height: 100vh;
 
   @media (max-width: 1024px) {
     font-size: 15px;
@@ -34,13 +15,17 @@ body {
   }
 }
 
-img {
+.frontend-app * {
+  box-sizing: border-box;
+}
+
+.frontend-app img {
   max-width: 100%;
   height: auto;
   display: block;
 }
 
-h1 {
+.frontend-app h1 {
   margin: 40px 0;
   font-size: 64px;
   line-height: 70px;
@@ -63,33 +48,33 @@ h1 {
   }
 }
 
-p {
+.frontend-app p {
   margin: 24px 0;
 
   @media (max-width: 1024px) {
-    margin: calc(var(--base) * 0.75) 0;
+    margin: 18px 0;
   }
 }
 
-a {
+.frontend-app a {
   color: currentColor;
-
-  &:focus {
-    opacity: 0.8;
-    outline: none;
-  }
-
-  &:active {
-    opacity: 0.7;
-    outline: none;
-  }
 }
 
-svg {
+.frontend-app a:focus {
+  opacity: 0.8;
+  outline: none;
+}
+
+.frontend-app a:active {
+  opacity: 0.7;
+  outline: none;
+}
+
+.frontend-app svg {
   vertical-align: middle;
 }
 
-.home {
+.frontend-app .home {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -103,62 +88,62 @@ svg {
   @media (max-width: 400px) {
     padding: 24px;
   }
+}
 
-  .content {
-    display: flex;
+.frontend-app .home .content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.frontend-app .home .content h1 {
+  text-align: center;
+}
+
+.frontend-app .home .links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.frontend-app .home .links a {
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.frontend-app .home .links .admin {
+  color: rgb(0, 0, 0);
+  background: rgb(255, 255, 255);
+  border: 1px solid rgb(0, 0, 0);
+}
+
+.frontend-app .home .links .docs {
+  color: rgb(255, 255, 255);
+  background: rgb(0, 0, 0);
+  border: 1px solid rgb(255, 255, 255);
+}
+
+.frontend-app .home .footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  @media (max-width: 1024px) {
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex-grow: 1;
-
-    h1 {
-      text-align: center;
-    }
+    gap: 6px;
   }
+}
 
-  .links {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+.frontend-app .home .footer p {
+  margin: 0;
+}
 
-    a {
-      text-decoration: none;
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-    }
-
-    .admin {
-      color: rgb(0, 0, 0);
-      background: rgb(1000, 1000, 1000);
-      border: 1px solid rgb(0, 0, 0);
-    }
-
-    .docs {
-      color: rgb(1000, 1000, 1000);
-      background: rgb(0, 0, 0);
-      border: 1px solid rgb(1000, 1000, 1000);
-    }
-  }
-
-  .footer {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    @media (max-width: 1024px) {
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    p {
-      margin: 0;
-    }
-
-    .codeLink {
-      text-decoration: none;
-      padding: 0 0.5rem;
-      background: rgb(60, 60, 60);
-      border-radius: 4px;
-    }
-  }
+.frontend-app .home .footer .codeLink {
+  text-decoration: none;
+  padding: 0 0.5rem;
+  background: rgb(60, 60, 60);
+  border-radius: 4px;
 }

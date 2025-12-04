@@ -88,14 +88,11 @@ export const PriceRecords: CollectionConfig = {
       defaultValue: 'USD',
     },
     {
-      name: 'billingCycle',
-      type: 'select',
-      options: [
-        { label: 'Weekly', value: 'weekly' },
-        { label: 'Monthly', value: 'monthly' },
-        { label: 'Quarterly', value: 'quarterly' },
-        { label: 'Yearly', value: 'yearly' },
-      ],
+      name: 'frequency',
+      type: 'text',
+      admin: {
+        description: 'Billing frequency (e.g., monthly, yearly, every 2 weeks)',
+      },
     },
     {
       name: 'recordedAt',

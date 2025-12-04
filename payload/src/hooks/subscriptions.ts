@@ -1,28 +1,31 @@
 import type { CollectionBeforeChangeHook, CollectionAfterChangeHook } from 'payload'
 
+type Frequency = 'days' | 'weeks' | 'months' | 'years'
+
 /**
- * Calculate the next payment date based on the billing cycle
+ * Calculate the next payment date based on paymentEvery and frequency
  */
 function calculateNextPaymentDate(
-  firstPaymentDate: Date,
-  billingCycle: 'weekly' | 'monthly' | 'quarterly' | 'yearly',
+  startDate: Date,
+  paymentEvery: number,
+  frequency: Frequency,
 ): Date {
   const now = new Date()
-  const next = new Date(firstPaymentDate)
+  const next = new Date(startDate)
 
   while (next <= now) {
-    switch (billingCycle) {
-      case 'weekly':
-        next.setDate(next.getDate() + 7)
+    switch (frequency) {
+      case 'days':
+        next.setDate(next.getDate() + paymentEvery)
         break
-      case 'monthly':
-        next.setMonth(next.getMonth() + 1)
+      case 'weeks':
+        next.setDate(next.getDate() + paymentEvery * 7)
         break
-      case 'quarterly':
-        next.setMonth(next.getMonth() + 3)
+      case 'months':
+        next.setMonth(next.getMonth() + paymentEvery)
         break
-      case 'yearly':
-        next.setFullYear(next.getFullYear() + 1)
+      case 'years':
+        next.setFullYear(next.getFullYear() + paymentEvery)
         break
     }
   }
@@ -39,9 +42,9 @@ export const calculateNextPaymentDateHook: CollectionBeforeChangeHook = async ({
   originalDoc,
 }) => {
   // Only calculate if we have the required fields
-  if (data.firstPaymentDate && data.billingCycle) {
-    const firstPayment = new Date(data.firstPaymentDate)
-    const nextPayment = calculateNextPaymentDate(firstPayment, data.billingCycle)
+  if (data.startDate && data.frequency && data.paymentEvery) {
+    const start = new Date(data.startDate)
+    const nextPayment = calculateNextPaymentDate(start, data.paymentEvery, data.frequency)
     data.nextPaymentDate = nextPayment.toISOString()
   }
 
@@ -66,6 +69,25 @@ export const calculateNextPaymentDateHook: CollectionBeforeChangeHook = async ({
 }
 
 /**
+ * Format frequency for display (e.g., "1 months" -> "monthly", "2 weeks" -> "every 2 weeks")
+ */
+function formatFrequency(paymentEvery: number, frequency: Frequency): string {
+  if (paymentEvery === 1) {
+    switch (frequency) {
+      case 'days':
+        return 'daily'
+      case 'weeks':
+        return 'weekly'
+      case 'months':
+        return 'monthly'
+      case 'years':
+        return 'yearly'
+    }
+  }
+  return `every ${paymentEvery} ${frequency}`
+}
+
+/**
  * After change hook to record price changes
  */
 export const recordPriceChangeHook: CollectionAfterChangeHook = async ({
@@ -83,6 +105,7 @@ export const recordPriceChangeHook: CollectionAfterChangeHook = async ({
   // If price changed, record it
   if (previousPrice !== currentPrice && previousPrice !== undefined) {
     const changePercentage = ((currentPrice - previousPrice) / previousPrice) * 100
+    const frequencyLabel = formatFrequency(doc.paymentEvery || 1, doc.frequency || 'months')
 
     await req.payload.create({
       collection: 'price-records',
@@ -91,7 +114,7 @@ export const recordPriceChangeHook: CollectionAfterChangeHook = async ({
         price: currentPrice,
         previousPrice: previousPrice,
         currency: doc.currency || 'USD',
-        billingCycle: doc.billingCycle,
+        frequency: frequencyLabel,
         recordedAt: new Date().toISOString(),
         source: 'user_update',
         changePercentage: Math.round(changePercentage * 100) / 100,
@@ -108,7 +131,7 @@ export const recordPriceChangeHook: CollectionAfterChangeHook = async ({
             user,
             type: 'price_change',
             title: `${doc.name} price increased`,
-            body: `The price of ${doc.name} has increased from $${(previousPrice / 100).toFixed(2)} to $${(currentPrice / 100).toFixed(2)} (${changePercentage > 0 ? '+' : ''}${changePercentage.toFixed(1)}%)`,
+            body: `The price of ${doc.name} has increased from ${doc.currency} ${previousPrice} to ${doc.currency} ${currentPrice} (${changePercentage > 0 ? '+' : ''}${changePercentage.toFixed(1)}%)`,
             subscription: doc.id,
             status: 'pending',
             priority: 'high',
@@ -124,26 +147,13 @@ export const recordPriceChangeHook: CollectionAfterChangeHook = async ({
 
 /**
  * After change hook to create initial price record
+ * Disabled: PostgreSQL transactions prevent this from working reliably in afterChange hooks.
+ * Price records will be created on first price update instead.
  */
 export const createInitialPriceRecordHook: CollectionAfterChangeHook = async ({
   doc,
-  operation,
-  req,
 }) => {
-  // Only on create
-  if (operation !== 'create') return doc
-
-  await req.payload.create({
-    collection: 'price-records',
-    data: {
-      subscription: doc.id,
-      price: doc.price,
-      currency: doc.currency || 'USD',
-      billingCycle: doc.billingCycle,
-      recordedAt: new Date().toISOString(),
-      source: doc.source === 'manual' ? 'user_update' : 'import',
-    },
-  })
-
+  // Disabled - PostgreSQL foreign key constraint fails because subscription
+  // isn't committed yet within the same transaction
   return doc
 }

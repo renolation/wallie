@@ -1,6 +1,25 @@
 import type { Payload } from 'payload'
 
 /**
+ * Format frequency for display
+ */
+function formatFrequency(paymentEvery: number, frequency: string): string {
+  if (paymentEvery === 1) {
+    switch (frequency) {
+      case 'days':
+        return 'daily'
+      case 'weeks':
+        return 'weekly'
+      case 'months':
+        return 'monthly'
+      case 'years':
+        return 'yearly'
+    }
+  }
+  return `every ${paymentEvery} ${frequency}`
+}
+
+/**
  * Check for upcoming subscription renewals and create notifications
  * This should be called periodically (e.g., hourly via cron)
  */
@@ -159,8 +178,8 @@ export async function checkTrialEndingNotifications(payload: Payload): Promise<{
         continue
       }
 
-      const priceFormatted = (sub.price / 100).toFixed(2)
       const currency = sub.currency || 'USD'
+      const frequencyLabel = formatFrequency(sub.paymentEvery || 1, sub.frequency || 'months')
 
       await payload.create({
         collection: 'notifications',
@@ -168,7 +187,7 @@ export async function checkTrialEndingNotifications(payload: Payload): Promise<{
           user: userId,
           type: 'trial_ending',
           title: `${sub.name} trial ends in 3 days`,
-          body: `Your free trial for ${sub.name} ends soon. After the trial, you'll be charged ${currency} ${priceFormatted}/${sub.billingCycle}.`,
+          body: `Your free trial for ${sub.name} ends soon. After the trial, you'll be charged ${currency} ${sub.price} ${frequencyLabel}.`,
           subscription: sub.id,
           status: 'pending',
           priority: 'high',

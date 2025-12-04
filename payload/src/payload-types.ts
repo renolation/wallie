@@ -228,45 +228,87 @@ export interface Category {
 export interface Subscription {
   id: number;
   user?: (number | null) | User;
-  name: string;
-  description?: string | null;
-  logo?: (number | null) | Media;
   /**
-   * External logo URL (fallback if no uploaded logo)
+   * Subscription service name (e.g., Netflix, Spotify)
+   */
+  name: string;
+  /**
+   * Click "Auto-fetch" to get logo from service name or URL
    */
   logoUrl?: string | null;
   /**
-   * Price in cents (e.g., 999 = $9.99)
+   * Website URL for the subscription service
+   */
+  url?: string | null;
+  category?: (number | null) | Category;
+  /**
+   * Price per billing cycle
    */
   price: number;
-  currency?: ('USD' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'AUD' | 'INR' | 'KRW' | 'BRL' | 'MXN') | null;
-  billingCycle: 'weekly' | 'monthly' | 'quarterly' | 'yearly';
+  currency:
+    | 'USD'
+    | 'EUR'
+    | 'GBP'
+    | 'JPY'
+    | 'CAD'
+    | 'AUD'
+    | 'INR'
+    | 'KRW'
+    | 'BRL'
+    | 'MXN'
+    | 'VND'
+    | 'THB'
+    | 'SGD'
+    | 'CHF'
+    | 'CNY';
   /**
-   * When the first payment was/will be made
+   * Payment interval (e.g., every 1, 2, 3...)
    */
-  firstPaymentDate: string;
-  /**
-   * Calculated automatically based on billing cycle
-   */
-  nextPaymentDate?: string | null;
+  paymentEvery: number;
+  frequency: 'days' | 'weeks' | 'months' | 'years';
+  autoRenew?: boolean | null;
   status?: ('active' | 'paused' | 'cancelled' | 'trial') | null;
   /**
    * When the free trial ends
    */
   trialEndDate?: string | null;
-  category?: (number | null) | Category;
   /**
-   * Household this subscription belongs to (for split billing)
+   * When the subscription started
    */
-  household?: (number | null) | Household;
+  startDate: string;
   /**
-   * Who actually pays the bill (for split households)
+   * Calculated automatically based on frequency
+   */
+  nextPaymentDate?: string | null;
+  paymentMethod?:
+    | (
+        | 'credit_card'
+        | 'debit_card'
+        | 'paypal'
+        | 'bank_transfer'
+        | 'apple_pay'
+        | 'google_pay'
+        | 'crypto'
+        | 'gift_card'
+        | 'other'
+      )
+    | null;
+  /**
+   * Who pays for this subscription
    */
   paidBy?: (number | null) | User;
   /**
-   * Website URL for the subscription service
+   * Household for split billing
    */
-  website?: string | null;
+  household?: (number | null) | Household;
+  enableNotification?: boolean | null;
+  /**
+   * Days before payment to notify
+   */
+  notifyBefore?: number | null;
+  /**
+   * Any additional notes
+   */
   notes?: string | null;
   tags?:
     | {
@@ -275,21 +317,10 @@ export interface Subscription {
       }[]
     | null;
   /**
-   * How this subscription was added
-   */
-  source?: ('manual' | 'screenshot_import' | 'email_import' | 'voice_entry') | null;
-  /**
-   * Has the renewal notification been sent for the current cycle?
+   * Notification sent for current cycle?
    */
   notifiedForCurrentCycle?: boolean | null;
-  /**
-   * Does this subscription auto-renew?
-   */
-  autoRenew?: boolean | null;
-  /**
-   * Direct link to cancel the subscription
-   */
-  cancellationUrl?: string | null;
+  source?: ('manual' | 'screenshot' | 'email' | 'voice') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -433,7 +464,10 @@ export interface PriceRecord {
    */
   previousPrice?: number | null;
   currency: string;
-  billingCycle?: ('weekly' | 'monthly' | 'quarterly' | 'yearly') | null;
+  /**
+   * Billing frequency (e.g., monthly, yearly, every 2 weeks)
+   */
+  frequency?: string | null;
   recordedAt: string;
   source?: ('user_update' | 'auto_detection' | 'import') | null;
   /**
@@ -626,20 +660,23 @@ export interface CategoriesSelect<T extends boolean = true> {
 export interface SubscriptionsSelect<T extends boolean = true> {
   user?: T;
   name?: T;
-  description?: T;
-  logo?: T;
   logoUrl?: T;
+  url?: T;
+  category?: T;
   price?: T;
   currency?: T;
-  billingCycle?: T;
-  firstPaymentDate?: T;
-  nextPaymentDate?: T;
+  paymentEvery?: T;
+  frequency?: T;
+  autoRenew?: T;
   status?: T;
   trialEndDate?: T;
-  category?: T;
-  household?: T;
+  startDate?: T;
+  nextPaymentDate?: T;
+  paymentMethod?: T;
   paidBy?: T;
-  website?: T;
+  household?: T;
+  enableNotification?: T;
+  notifyBefore?: T;
   notes?: T;
   tags?:
     | T
@@ -647,10 +684,8 @@ export interface SubscriptionsSelect<T extends boolean = true> {
         tag?: T;
         id?: T;
       };
-  source?: T;
   notifiedForCurrentCycle?: T;
-  autoRenew?: T;
-  cancellationUrl?: T;
+  source?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -728,7 +763,7 @@ export interface PriceRecordsSelect<T extends boolean = true> {
   price?: T;
   previousPrice?: T;
   currency?: T;
-  billingCycle?: T;
+  frequency?: T;
   recordedAt?: T;
   source?: T;
   changePercentage?: T;

@@ -1,6 +1,32 @@
 import type { Endpoint } from 'payload'
 
 /**
+ * Calculate monthly equivalent from payment frequency
+ */
+function normalizeToMonthly(price: number, paymentEvery: number, frequency: string): number {
+  const paymentsPerYear = getPaymentsPerYear(paymentEvery, frequency)
+  return (price * paymentsPerYear) / 12
+}
+
+/**
+ * Get number of payments per year based on frequency
+ */
+function getPaymentsPerYear(paymentEvery: number, frequency: string): number {
+  switch (frequency) {
+    case 'days':
+      return 365 / paymentEvery
+    case 'weeks':
+      return 52 / paymentEvery
+    case 'months':
+      return 12 / paymentEvery
+    case 'years':
+      return 1 / paymentEvery
+    default:
+      return 12 // default to monthly
+  }
+}
+
+/**
  * Dashboard Summary Endpoint
  * GET /api/dashboard/summary
  *
@@ -40,26 +66,20 @@ export const dashboardSummaryEndpoint: Endpoint = {
         id: number
         name: string
         price: number
+        currency: string
         nextPaymentDate: string
         daysUntil: number
+        logoUrl?: string
       }> = []
-      const spendByCategory: Record<string, number> = {}
+      const spendByCategory: Record<string, { amount: number; count: number }> = {}
 
       for (const sub of subscriptions.docs) {
-        // Normalize to monthly spend (price is in cents)
-        let monthlyAmount = sub.price
-        switch (sub.billingCycle) {
-          case 'weekly':
-            monthlyAmount = sub.price * 4.33 // Average weeks per month
-            break
-          case 'quarterly':
-            monthlyAmount = sub.price / 3
-            break
-          case 'yearly':
-            monthlyAmount = sub.price / 12
-            break
-          // monthly stays as is
-        }
+        // Normalize to monthly spend
+        const monthlyAmount = normalizeToMonthly(
+          sub.price,
+          sub.paymentEvery || 1,
+          sub.frequency || 'months',
+        )
         totalMonthlySpend += monthlyAmount
 
         // Check upcoming payments
@@ -73,8 +93,10 @@ export const dashboardSummaryEndpoint: Endpoint = {
               id: sub.id,
               name: sub.name,
               price: sub.price,
+              currency: sub.currency || 'USD',
               nextPaymentDate: sub.nextPaymentDate,
               daysUntil,
+              logoUrl: sub.logoUrl || undefined,
             })
           }
         }
@@ -83,7 +105,11 @@ export const dashboardSummaryEndpoint: Endpoint = {
         const categoryName =
           typeof sub.category === 'object' ? sub.category?.name : 'Uncategorized'
         const catKey = categoryName || 'Uncategorized'
-        spendByCategory[catKey] = (spendByCategory[catKey] || 0) + monthlyAmount
+        if (!spendByCategory[catKey]) {
+          spendByCategory[catKey] = { amount: 0, count: 0 }
+        }
+        spendByCategory[catKey].amount += monthlyAmount
+        spendByCategory[catKey].count += 1
       }
 
       // Sort upcoming payments by date
@@ -91,10 +117,11 @@ export const dashboardSummaryEndpoint: Endpoint = {
 
       // Convert spend by category to array and sort
       const categoryBreakdown = Object.entries(spendByCategory)
-        .map(([category, amount]) => ({
+        .map(([category, data]) => ({
           category,
-          monthlyAmount: Math.round(amount),
-          percentage: totalMonthlySpend > 0 ? Math.round((amount / totalMonthlySpend) * 100) : 0,
+          monthlyAmount: Math.round(data.amount * 100) / 100,
+          count: data.count,
+          percentage: totalMonthlySpend > 0 ? Math.round((data.amount / totalMonthlySpend) * 100) : 0,
         }))
         .sort((a, b) => b.monthlyAmount - a.monthlyAmount)
 
@@ -102,8 +129,8 @@ export const dashboardSummaryEndpoint: Endpoint = {
         totalSubscriptions: subscriptions.totalDocs,
         activeSubscriptions: subscriptions.docs.filter((s) => s.status === 'active').length,
         trialSubscriptions: subscriptions.docs.filter((s) => s.status === 'trial').length,
-        totalMonthlySpend: Math.round(totalMonthlySpend), // in cents
-        totalYearlySpend: Math.round(totalMonthlySpend * 12), // in cents
+        totalMonthlySpend: Math.round(totalMonthlySpend * 100) / 100,
+        totalYearlySpend: Math.round(totalMonthlySpend * 12 * 100) / 100,
         upcomingPaymentsCount: upcomingPayments.length,
         upcomingPayments: upcomingPayments.slice(0, 5), // Top 5
         categoryBreakdown,
