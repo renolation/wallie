@@ -126,9 +126,9 @@ export const LogoField: React.FC<LogoFieldProps> = ({ path, field }) => {
   const [error, setError] = useState<string | null>(null)
   const [previewError, setPreviewError] = useState(false)
 
-  // Get name and url fields from the form
+  // Get name and websiteUrl fields from the form
   const nameField = useFormFields(([fields]) => fields['name'])
-  const urlField = useFormFields(([fields]) => fields['url'])
+  const urlField = useFormFields(([fields]) => fields['websiteUrl'])
 
   const fetchLogo = useCallback(async () => {
     setLoading(true)

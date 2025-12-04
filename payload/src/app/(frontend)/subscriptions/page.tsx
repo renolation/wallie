@@ -7,36 +7,23 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { cn } from '@/lib/utils'
 
 interface Subscription {
   id: number
   name: string
-  logoUrl?: string
+  logo?: string
   price: number
   currency: string
-  paymentEvery: number
-  frequency: string
-  nextPaymentDate?: string
-  paymentMethod?: string
+  repeatEvery: number
+  billingCycle: string
+  nextBillingDate?: string
   status: string
+  isRecurring: boolean
 }
 
 interface Category {
   id: number
   name: string
-}
-
-const PAYMENT_METHOD_ICONS: Record<string, string> = {
-  credit_card: '💳',
-  debit_card: '💳',
-  paypal: '🅿️',
-  apple_pay: '',
-  google_pay: '🔷',
-  bank_transfer: '🏦',
-  crypto: '₿',
-  gift_card: '🎁',
-  other: '💰',
 }
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -73,23 +60,11 @@ const CURRENCIES = [
   { value: 'CNY', label: 'CNY (¥)' },
 ]
 
-const FREQUENCIES = [
-  { value: 'days', label: 'Day(s)' },
-  { value: 'weeks', label: 'Week(s)' },
-  { value: 'months', label: 'Month(s)' },
-  { value: 'years', label: 'Year(s)' },
-]
-
-const PAYMENT_METHODS = [
-  { value: 'credit_card', label: 'Credit Card' },
-  { value: 'debit_card', label: 'Debit Card' },
-  { value: 'paypal', label: 'PayPal' },
-  { value: 'apple_pay', label: 'Apple Pay' },
-  { value: 'google_pay', label: 'Google Pay' },
-  { value: 'bank_transfer', label: 'Bank Transfer' },
-  { value: 'crypto', label: 'Crypto' },
-  { value: 'gift_card', label: 'Gift Card' },
-  { value: 'other', label: 'Other' },
+const BILLING_CYCLES = [
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'yearly', label: 'Yearly' },
 ]
 
 const SERVICE_DOMAINS: Record<string, string> = {
@@ -151,18 +126,20 @@ export default function SubscriptionsPage() {
 
   const [form, setForm] = useState({
     name: '',
-    logoUrl: '',
-    url: '',
+    logo: '',
+    websiteUrl: '',
+    description: '',
     price: '',
     currency: 'USD',
-    paymentEvery: '1',
-    frequency: 'months',
-    autoRenew: true,
+    promoPrice: '',
+    promoEndDate: '',
+    billingCycle: 'monthly',
+    repeatEvery: '1',
+    isRecurring: true,
     startDate: new Date().toISOString().split('T')[0],
-    paymentMethod: '',
+    freeTrialDays: '',
+    trialEndDate: '',
     category: '',
-    enableNotification: true,
-    notifyBefore: '3',
     notes: '',
   })
 
@@ -200,8 +177,8 @@ export default function SubscriptionsPage() {
   const handleFetchLogo = useCallback(() => {
     let domain: string | null = null
 
-    if (form.url.trim()) {
-      domain = extractDomainFromUrl(form.url)
+    if (form.websiteUrl.trim()) {
+      domain = extractDomainFromUrl(form.websiteUrl)
     }
 
     if (!domain && form.name.trim()) {
@@ -210,11 +187,11 @@ export default function SubscriptionsPage() {
 
     if (domain) {
       const logoUrl = buildLogoUrl(domain)
-      setForm((prev) => ({ ...prev, logoUrl }))
+      setForm((prev) => ({ ...prev, logo: logoUrl }))
       setLogoPreview(logoUrl)
       setLogoError(false)
     }
-  }, [form.name, form.url])
+  }, [form.name, form.websiteUrl])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -223,18 +200,20 @@ export default function SubscriptionsPage() {
     try {
       const payload = {
         name: form.name,
-        logoUrl: form.logoUrl || undefined,
-        url: form.url || undefined,
+        logo: form.logo || undefined,
+        websiteUrl: form.websiteUrl || undefined,
+        description: form.description || undefined,
         price: parseFloat(form.price),
         currency: form.currency,
-        paymentEvery: parseInt(form.paymentEvery),
-        frequency: form.frequency,
-        autoRenew: form.autoRenew,
+        promoPrice: form.promoPrice ? parseFloat(form.promoPrice) : undefined,
+        promoEndDate: form.promoEndDate || undefined,
+        billingCycle: form.billingCycle,
+        repeatEvery: parseInt(form.repeatEvery),
+        isRecurring: form.isRecurring,
         startDate: form.startDate,
-        paymentMethod: form.paymentMethod || undefined,
+        freeTrialDays: form.freeTrialDays ? parseInt(form.freeTrialDays) : undefined,
+        trialEndDate: form.trialEndDate || undefined,
         category: form.category ? parseInt(form.category) : undefined,
-        enableNotification: form.enableNotification,
-        notifyBefore: parseInt(form.notifyBefore),
         notes: form.notes || undefined,
       }
 
@@ -264,35 +243,43 @@ export default function SubscriptionsPage() {
   const resetForm = () => {
     setForm({
       name: '',
-      logoUrl: '',
-      url: '',
+      logo: '',
+      websiteUrl: '',
+      description: '',
       price: '',
       currency: 'USD',
-      paymentEvery: '1',
-      frequency: 'months',
-      autoRenew: true,
+      promoPrice: '',
+      promoEndDate: '',
+      billingCycle: 'monthly',
+      repeatEvery: '1',
+      isRecurring: true,
       startDate: new Date().toISOString().split('T')[0],
-      paymentMethod: '',
+      freeTrialDays: '',
+      trialEndDate: '',
       category: '',
-      enableNotification: true,
-      notifyBefore: '3',
       notes: '',
     })
     setLogoPreview('')
     setLogoError(false)
   }
 
-  const formatFrequency = (paymentEvery: number, frequency: string) => {
-    if (paymentEvery === 1) {
-      const singularMap: Record<string, string> = {
-        days: 'Daily',
-        weeks: 'Weekly',
-        months: 'Monthly',
-        years: 'Yearly',
+  const formatBillingCycle = (repeatEvery: number, billingCycle: string) => {
+    if (repeatEvery === 1) {
+      const labels: Record<string, string> = {
+        daily: 'Daily',
+        weekly: 'Weekly',
+        monthly: 'Monthly',
+        yearly: 'Yearly',
       }
-      return singularMap[frequency] || frequency
+      return labels[billingCycle] || billingCycle
     }
-    return `Every ${paymentEvery} ${frequency}`
+    const cycleMap: Record<string, string> = {
+      daily: 'days',
+      weekly: 'weeks',
+      monthly: 'months',
+      yearly: 'years',
+    }
+    return `Every ${repeatEvery} ${cycleMap[billingCycle] || billingCycle}`
   }
 
   const formatDate = (dateStr?: string) => {
@@ -368,9 +355,9 @@ export default function SubscriptionsPage() {
             <Card key={sub.id} className="flex items-center p-4 gap-4">
               {/* Logo */}
               <div className="w-28 h-12 flex items-center justify-start shrink-0">
-                {sub.logoUrl ? (
+                {sub.logo ? (
                   <img
-                    src={sub.logoUrl}
+                    src={sub.logo}
                     alt={sub.name}
                     className="max-w-full max-h-full object-contain"
                     onError={(e) => {
@@ -389,14 +376,14 @@ export default function SubscriptionsPage() {
                 <span className="font-semibold">{sub.name}</span>
               </div>
 
-              {/* Frequency */}
+              {/* Billing Cycle */}
               <div className="min-w-[120px] text-sm text-muted-foreground">
-                {formatFrequency(sub.paymentEvery, sub.frequency)}
+                {formatBillingCycle(sub.repeatEvery, sub.billingCycle)}
               </div>
 
-              {/* Next Payment Date */}
+              {/* Next Billing Date */}
               <div className="min-w-[80px] text-sm text-center">
-                {formatDate(sub.nextPaymentDate)}
+                {formatDate(sub.nextBillingDate)}
               </div>
 
               {/* Price */}
@@ -404,9 +391,13 @@ export default function SubscriptionsPage() {
                 {formatPrice(sub.price, sub.currency)}
               </div>
 
-              {/* Payment Method */}
-              <div className="min-w-[50px] text-center text-2xl">
-                {sub.paymentMethod ? PAYMENT_METHOD_ICONS[sub.paymentMethod] || '💰' : '-'}
+              {/* Recurring Badge */}
+              <div className="min-w-[50px] text-center">
+                {sub.isRecurring ? (
+                  <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">Auto</span>
+                ) : (
+                  <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded">Once</span>
+                )}
               </div>
 
               {/* Menu Button */}
@@ -431,7 +422,7 @@ export default function SubscriptionsPage() {
             </button>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
             {/* Logo Preview */}
             <div className="flex items-center gap-4 mb-4">
               <div className="w-16 h-16 rounded-xl bg-muted flex items-center justify-center overflow-hidden shrink-0">
@@ -449,9 +440,9 @@ export default function SubscriptionsPage() {
               <div className="flex-1">
                 <Input
                   placeholder="Logo URL (auto-fetched)"
-                  value={form.logoUrl}
+                  value={form.logo}
                   onChange={(e) => {
-                    setForm({ ...form, logoUrl: e.target.value })
+                    setForm({ ...form, logo: e.target.value })
                     setLogoPreview(e.target.value)
                     setLogoError(false)
                   }}
@@ -473,13 +464,25 @@ export default function SubscriptionsPage() {
               />
             </div>
 
-            {/* URL */}
+            {/* Website URL */}
             <div>
-              <Label>URL</Label>
+              <Label>Website URL</Label>
               <Input
-                value={form.url}
-                onChange={(e) => setForm({ ...form, url: e.target.value })}
+                value={form.websiteUrl}
+                onChange={(e) => setForm({ ...form, websiteUrl: e.target.value })}
                 placeholder="https://example.com"
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <Label>Description</Label>
+              <textarea
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="Brief description..."
+                rows={2}
+                className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm resize-y"
               />
             </div>
 
@@ -511,29 +514,51 @@ export default function SubscriptionsPage() {
               </div>
             </div>
 
-            {/* Payment Every & Frequency */}
+            {/* Promo Price */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Payment Every *</Label>
+                <Label>Promo Price</Label>
                 <Input
                   type="number"
-                  min="1"
-                  value={form.paymentEvery}
-                  onChange={(e) => setForm({ ...form, paymentEvery: e.target.value })}
-                  required
+                  step="0.01"
+                  min="0"
+                  value={form.promoPrice}
+                  onChange={(e) => setForm({ ...form, promoPrice: e.target.value })}
+                  placeholder="4.99"
                 />
               </div>
               <div>
-                <Label>Frequency</Label>
+                <Label>Promo Ends</Label>
+                <Input
+                  type="date"
+                  value={form.promoEndDate}
+                  onChange={(e) => setForm({ ...form, promoEndDate: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* Billing Cycle */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Billing Cycle *</Label>
                 <select
-                  value={form.frequency}
-                  onChange={(e) => setForm({ ...form, frequency: e.target.value })}
+                  value={form.billingCycle}
+                  onChange={(e) => setForm({ ...form, billingCycle: e.target.value })}
                   className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
                 >
-                  {FREQUENCIES.map((f) => (
-                    <option key={f.value} value={f.value}>{f.label}</option>
+                  {BILLING_CYCLES.map((c) => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <Label>Repeat Every</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={form.repeatEvery}
+                  onChange={(e) => setForm({ ...form, repeatEvery: e.target.value })}
+                />
               </div>
             </div>
 
@@ -548,70 +573,55 @@ export default function SubscriptionsPage() {
               />
             </div>
 
-            {/* Payment Method & Category */}
+            {/* Free Trial */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Payment Method</Label>
-                <select
-                  value={form.paymentMethod}
-                  onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}
-                  className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                >
-                  <option value="">Select...</option>
-                  {PAYMENT_METHODS.map((m) => (
-                    <option key={m.value} value={m.value}>{m.label}</option>
-                  ))}
-                </select>
+                <Label>Free Trial (days)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={form.freeTrialDays}
+                  onChange={(e) => setForm({ ...form, freeTrialDays: e.target.value })}
+                  placeholder="0"
+                />
               </div>
               <div>
-                <Label>Category</Label>
-                <select
-                  value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                >
-                  <option value="">Select...</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
+                <Label>Trial End Date</Label>
+                <Input
+                  type="date"
+                  value={form.trialEndDate}
+                  onChange={(e) => setForm({ ...form, trialEndDate: e.target.value })}
+                />
               </div>
             </div>
 
-            {/* Auto Renew & Notification */}
+            {/* Category */}
+            <div>
+              <Label>Category</Label>
+              <select
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+              >
+                <option value="">Select...</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Recurring */}
             <div className="flex items-center gap-6">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={form.autoRenew}
-                  onChange={(e) => setForm({ ...form, autoRenew: e.target.checked })}
+                  checked={form.isRecurring}
+                  onChange={(e) => setForm({ ...form, isRecurring: e.target.checked })}
                   className="w-4 h-4 rounded"
                 />
-                <span className="text-sm">Auto Renew</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={form.enableNotification}
-                  onChange={(e) => setForm({ ...form, enableNotification: e.target.checked })}
-                  className="w-4 h-4 rounded"
-                />
-                <span className="text-sm">Enable Notification</span>
+                <span className="text-sm">Recurring Subscription</span>
               </label>
             </div>
-
-            {/* Notify Before */}
-            {form.enableNotification && (
-              <div>
-                <Label>Notify Before (days)</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={form.notifyBefore}
-                  onChange={(e) => setForm({ ...form, notifyBefore: e.target.value })}
-                />
-              </div>
-            )}
 
             {/* Notes */}
             <div>

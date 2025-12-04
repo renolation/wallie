@@ -1,31 +1,31 @@
 import type { CollectionBeforeChangeHook, CollectionAfterChangeHook } from 'payload'
 
-type Frequency = 'days' | 'weeks' | 'months' | 'years'
+type BillingCycle = 'daily' | 'weekly' | 'monthly' | 'yearly'
 
 /**
- * Calculate the next payment date based on paymentEvery and frequency
+ * Calculate the next billing date based on repeatEvery and billingCycle
  */
-function calculateNextPaymentDate(
+function calculateNextBillingDate(
   startDate: Date,
-  paymentEvery: number,
-  frequency: Frequency,
+  repeatEvery: number,
+  billingCycle: BillingCycle,
 ): Date {
   const now = new Date()
   const next = new Date(startDate)
 
   while (next <= now) {
-    switch (frequency) {
-      case 'days':
-        next.setDate(next.getDate() + paymentEvery)
+    switch (billingCycle) {
+      case 'daily':
+        next.setDate(next.getDate() + repeatEvery)
         break
-      case 'weeks':
-        next.setDate(next.getDate() + paymentEvery * 7)
+      case 'weekly':
+        next.setDate(next.getDate() + repeatEvery * 7)
         break
-      case 'months':
-        next.setMonth(next.getMonth() + paymentEvery)
+      case 'monthly':
+        next.setMonth(next.getMonth() + repeatEvery)
         break
-      case 'years':
-        next.setFullYear(next.getFullYear() + paymentEvery)
+      case 'yearly':
+        next.setFullYear(next.getFullYear() + repeatEvery)
         break
     }
   }
@@ -34,7 +34,7 @@ function calculateNextPaymentDate(
 }
 
 /**
- * Before change hook to calculate next payment date
+ * Before change hook to calculate next billing date
  */
 export const calculateNextPaymentDateHook: CollectionBeforeChangeHook = async ({
   data,
@@ -42,24 +42,24 @@ export const calculateNextPaymentDateHook: CollectionBeforeChangeHook = async ({
   originalDoc,
 }) => {
   // Only calculate if we have the required fields
-  if (data.startDate && data.frequency && data.paymentEvery) {
+  if (data.startDate && data.billingCycle && data.repeatEvery) {
     const start = new Date(data.startDate)
-    const nextPayment = calculateNextPaymentDate(start, data.paymentEvery, data.frequency)
-    data.nextPaymentDate = nextPayment.toISOString()
+    const nextBilling = calculateNextBillingDate(start, data.repeatEvery, data.billingCycle)
+    data.nextBillingDate = nextBilling.toISOString()
   }
 
   // Reset notification flag if billing cycle is about to reset
   if (operation === 'update' && originalDoc) {
-    const oldNextPayment = originalDoc.nextPaymentDate
-      ? new Date(originalDoc.nextPaymentDate)
+    const oldNextBilling = originalDoc.nextBillingDate
+      ? new Date(originalDoc.nextBillingDate)
       : null
-    const newNextPayment = data.nextPaymentDate ? new Date(data.nextPaymentDate) : null
+    const newNextBilling = data.nextBillingDate ? new Date(data.nextBillingDate) : null
 
-    // If next payment date changed (new cycle), reset notification flag
+    // If next billing date changed (new cycle), reset notification flag
     if (
-      oldNextPayment &&
-      newNextPayment &&
-      oldNextPayment.getTime() !== newNextPayment.getTime()
+      oldNextBilling &&
+      newNextBilling &&
+      oldNextBilling.getTime() !== newNextBilling.getTime()
     ) {
       data.notifiedForCurrentCycle = false
     }
@@ -69,22 +69,19 @@ export const calculateNextPaymentDateHook: CollectionBeforeChangeHook = async ({
 }
 
 /**
- * Format frequency for display (e.g., "1 months" -> "monthly", "2 weeks" -> "every 2 weeks")
+ * Format billing cycle for display
  */
-function formatFrequency(paymentEvery: number, frequency: Frequency): string {
-  if (paymentEvery === 1) {
-    switch (frequency) {
-      case 'days':
-        return 'daily'
-      case 'weeks':
-        return 'weekly'
-      case 'months':
-        return 'monthly'
-      case 'years':
-        return 'yearly'
-    }
+function formatBillingCycle(repeatEvery: number, billingCycle: BillingCycle): string {
+  if (repeatEvery === 1) {
+    return billingCycle // daily, weekly, monthly, yearly
   }
-  return `every ${paymentEvery} ${frequency}`
+  const cycleMap: Record<BillingCycle, string> = {
+    daily: 'days',
+    weekly: 'weeks',
+    monthly: 'months',
+    yearly: 'years',
+  }
+  return `every ${repeatEvery} ${cycleMap[billingCycle]}`
 }
 
 /**
@@ -105,7 +102,7 @@ export const recordPriceChangeHook: CollectionAfterChangeHook = async ({
   // If price changed, record it
   if (previousPrice !== currentPrice && previousPrice !== undefined) {
     const changePercentage = ((currentPrice - previousPrice) / previousPrice) * 100
-    const frequencyLabel = formatFrequency(doc.paymentEvery || 1, doc.frequency || 'months')
+    const billingCycleLabel = formatBillingCycle(doc.repeatEvery || 1, doc.billingCycle || 'monthly')
 
     await req.payload.create({
       collection: 'price-records',
@@ -114,7 +111,7 @@ export const recordPriceChangeHook: CollectionAfterChangeHook = async ({
         price: currentPrice,
         previousPrice: previousPrice,
         currency: doc.currency || 'USD',
-        frequency: frequencyLabel,
+        frequency: billingCycleLabel,
         recordedAt: new Date().toISOString(),
         source: 'user_update',
         changePercentage: Math.round(changePercentage * 100) / 100,
@@ -142,18 +139,5 @@ export const recordPriceChangeHook: CollectionAfterChangeHook = async ({
     }
   }
 
-  return doc
-}
-
-/**
- * After change hook to create initial price record
- * Disabled: PostgreSQL transactions prevent this from working reliably in afterChange hooks.
- * Price records will be created on first price update instead.
- */
-export const createInitialPriceRecordHook: CollectionAfterChangeHook = async ({
-  doc,
-}) => {
-  // Disabled - PostgreSQL foreign key constraint fails because subscription
-  // isn't committed yet within the same transaction
   return doc
 }

@@ -139,10 +139,10 @@ function buildLogoUrl(domain: string): string {
 /**
  * Auto-fetch logo hook for subscriptions
  * Priority:
- * 1. If logoUrl already set (non-empty), keep it
- * 2. Try to get domain from user-entered URL field
+ * 1. If logo already set (non-empty), keep it
+ * 2. Try to get domain from user-entered websiteUrl field
  * 3. Try to get domain from service name mapping
- * 4. Fetch logo from Clearbit, fallback to Google Favicon
+ * 4. Fetch logo from DuckDuckGo icons
  */
 export const autoLogoHook: CollectionBeforeChangeHook = async ({ data, operation }) => {
   // Only run on create or update
@@ -150,16 +150,16 @@ export const autoLogoHook: CollectionBeforeChangeHook = async ({ data, operation
     return data
   }
 
-  // Skip if logoUrl is already set by user (non-empty string)
-  if (data.logoUrl && data.logoUrl.trim() !== '') {
+  // Skip if logo is already set by user (non-empty string)
+  if (data.logo && data.logo.trim() !== '') {
     return data
   }
 
   let domain: string | null = null
 
-  // Priority 1: Try to extract domain from user-entered URL
-  if (data.url && data.url.trim() !== '') {
-    domain = extractDomainFromUrl(data.url)
+  // Priority 1: Try to extract domain from user-entered websiteUrl
+  if (data.websiteUrl && data.websiteUrl.trim() !== '') {
+    domain = extractDomainFromUrl(data.websiteUrl)
   }
 
   // Priority 2: Try to get domain from service name mapping
@@ -173,7 +173,7 @@ export const autoLogoHook: CollectionBeforeChangeHook = async ({ data, operation
   }
 
   // Use DuckDuckGo icons - reliable and high quality
-  data.logoUrl = buildLogoUrl(domain)
+  data.logo = buildLogoUrl(domain)
 
   return data
 }
