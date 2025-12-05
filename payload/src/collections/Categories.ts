@@ -5,7 +5,7 @@ export const Categories: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     group: 'Core',
-    defaultColumns: ['name', 'color', 'isPublic', 'owner', 'createdAt'],
+    defaultColumns: ['name', 'icon', 'color', 'isPublic', 'owner', 'createdAt'],
   },
   access: {
     read: ({ req: { user } }) => {
@@ -49,6 +49,13 @@ export const Categories: CollectionConfig = {
       type: 'text',
       admin: {
         description: 'Hex color code (e.g., "#FF5733")',
+      },
+    },
+    {
+      name: 'icon',
+      type: 'text',
+      admin: {
+        description: 'Icon name (e.g., "play-circle", "music", "gamepad")',
       },
     },
     {

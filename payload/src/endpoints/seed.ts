@@ -1,7 +1,6 @@
 import type { Endpoint } from 'payload'
 
 const DEFAULT_CATEGORIES = [
-  { name: 'Streaming', icon: 'play-circle', color: '#E50914' },
   { name: 'Music', icon: 'music', color: '#1DB954' },
   { name: 'Gaming', icon: 'gamepad', color: '#9147FF' },
   { name: 'Software', icon: 'code', color: '#0078D4' },
@@ -57,7 +56,10 @@ export const seedCategoriesEndpoint: Endpoint = {
         try {
           await req.payload.create({
             collection: 'categories',
-            data: category,
+            data: {
+              ...category,
+              isPublic: true,
+            },
           })
           results.created.push(category.name)
         } catch (err) {

@@ -197,6 +197,10 @@ export interface Category {
    * Hex color code (e.g., "#FF5733")
    */
   color?: string | null;
+  /**
+   * Icon name (e.g., "play-circle", "music", "gamepad")
+   */
+  icon?: string | null;
   owner?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
@@ -448,6 +452,7 @@ export interface CategoriesSelect<T extends boolean = true> {
   name?: T;
   isPublic?: T;
   color?: T;
+  icon?: T;
   owner?: T;
   updatedAt?: T;
   createdAt?: T;
