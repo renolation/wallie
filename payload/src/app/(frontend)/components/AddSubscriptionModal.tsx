@@ -65,10 +65,10 @@ const CURRENCIES = [
 ]
 
 const BILLING_UNITS = [
-  { value: 'days', label: 'Day(s)' },
-  { value: 'weeks', label: 'Week(s)' },
-  { value: 'months', label: 'Month(s)' },
-  { value: 'years', label: 'Year(s)' },
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'yearly', label: 'Yearly' },
 ]
 
 const SERVICE_DOMAINS: Record<string, string> = {
@@ -114,7 +114,7 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: Add
 
   const [form, setForm] = useState<SubscriptionFormData>({
     name: '', category: '', websiteUrl: '', logo: '',
-    amount: '', currency: 'USD', billingCycleCount: '1', billingCycleUnit: 'months',
+    amount: '', currency: 'USD', billingCycleCount: '1', billingCycleUnit: 'monthly',
     promoPrice: '', promoEndDate: '',
     startDate: new Date().toISOString().split('T')[0], nextBillingDate: '', freeTrialEndDate: '',
     autoRenew: true, description: '', tags: '', notes: '',
@@ -153,7 +153,7 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: Add
   const resetForm = () => {
     setForm({
       name: '', category: '', websiteUrl: '', logo: '',
-      amount: '', currency: 'USD', billingCycleCount: '1', billingCycleUnit: 'months',
+      amount: '', currency: 'USD', billingCycleCount: '1', billingCycleUnit: 'monthly',
       promoPrice: '', promoEndDate: '',
       startDate: new Date().toISOString().split('T')[0], nextBillingDate: '', freeTrialEndDate: '',
       autoRenew: true, description: '', tags: '', notes: '',
