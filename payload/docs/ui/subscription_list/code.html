@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Subscription List</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b6cee",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden">
+<div class="flex flex-col lg:flex-row flex-1">
+<!-- SideNavBar -->
+<aside class="w-full lg:w-64 flex-shrink-0 bg-[#111722] p-4 border-r border-[#324467]/20">
+<div class="flex h-full flex-col justify-between">
+<div class="flex flex-col gap-4">
+<div class="flex gap-3 items-center">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User avatar image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDz00A_xoI_5_lqUw_aG98AAvI8rF7G9_5kLT721W33B1hcwnv1mwc9JHsaIov1j_iA4yUrKz8wshQ7oTORt1eOcKlsQflGRxZSAEOxXkBphzZnTeDXU9SoFUx-z-YtOL1SIRF0aS-MliKWVhiA-y8Qz19aTvlbAosv8JVawT5aQ9APhf39It4T3Exwctv9LZukGjxII7iv4lIeaB2jE3tHvk9wPw4tJegicxy-RCwZSvJ9AjRJr_6dimjRDHK5alLp8g6NdCLERrPk");'></div>
+<div class="flex flex-col">
+<h1 class="text-white text-base font-medium leading-normal">Eleanor Pena</h1>
+<p class="text-[#92a4c9] text-sm font-normal leading-normal">eleanor@example.com</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2 mt-4">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-white hover:bg-[#232f48] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<p class="text-sm font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary text-white" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">credit_card</span>
+<p class="text-sm font-medium leading-normal">Subscriptions</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-white hover:bg-[#232f48] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<p class="text-sm font-medium leading-normal">Upcoming</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-white hover:bg-[#232f48] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<p class="text-sm font-medium leading-normal">Settings</p>
+</a>
+</nav>
+</div>
+<button class="flex min-w-[84px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors duration-200">
+<span class="truncate">Upgrade Plan</span>
+</button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 p-4 sm:p-6 lg:p-8">
+<div class="w-full max-w-7xl mx-auto">
+<!-- PageHeading -->
+<div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+<p class="text-white text-4xl font-black leading-tight tracking-[-0.033em]">Subscriptions</p>
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors duration-200">
+<span class="truncate">+ Add Subscription</span>
+</button>
+</div>
+<!-- Stats -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+<div class="flex flex-1 flex-col gap-2 rounded-xl p-6 bg-[#111722] border border-[#324467]/30">
+<p class="text-[#92a4c9] text-base font-medium leading-normal">Total Monthly Cost</p>
+<p class="text-white tracking-light text-3xl font-bold leading-tight">$87.95</p>
+</div>
+<div class="flex flex-1 flex-col gap-2 rounded-xl p-6 bg-[#111722] border border-[#324467]/30">
+<p class="text-[#92a4c9] text-base font-medium leading-normal">Active Subscriptions</p>
+<p class="text-white tracking-light text-3xl font-bold leading-tight">8</p>
+</div>
+<div class="flex flex-1 flex-col gap-2 rounded-xl p-6 bg-[#111722] border border-[#324467]/30">
+<p class="text-[#92a4c9] text-base font-medium leading-normal">Upcoming Renewals</p>
+<p class="text-white tracking-light text-3xl font-bold leading-tight">2</p>
+</div>
+</div>
+<!-- Search and Filters -->
+<div class="flex flex-col md:flex-row gap-4 items-center mb-6">
+<!-- SearchBar -->
+<div class="w-full md:flex-1">
+<label class="flex flex-col min-w-40 h-12 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-[#92a4c9] flex bg-[#232f48] items-center justify-center pl-4 rounded-l-lg">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-white focus:outline-0 focus:ring-2 focus:ring-primary focus:ring-inset border-none bg-[#232f48] h-full placeholder:text-[#92a4c9] px-4 text-base font-normal leading-normal" placeholder="Search subscriptions..." value=""/>
+</div>
+</label>
+</div>
+<!-- Chips -->
+<div class="flex gap-3 overflow-x-auto w-full md:w-auto pb-2">
+<button class="flex h-12 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#232f48] px-4 hover:bg-[#324467]/80 transition-colors duration-200">
+<span class="material-symbols-outlined text-white text-xl">label</span>
+<p class="text-white text-sm font-medium leading-normal">Status</p>
+<span class="material-symbols-outlined text-white text-xl">expand_more</span>
+</button>
+<button class="flex h-12 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-[#232f48] px-4 hover:bg-[#324467]/80 transition-colors duration-200">
+<span class="material-symbols-outlined text-white text-xl">sort_by_alpha</span>
+<p class="text-white text-sm font-medium leading-normal">Sort by</p>
+<span class="material-symbols-outlined text-white text-xl">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Subscription List -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Subscription Card 1 -->
+<div class="flex flex-col gap-4 rounded-xl p-6 bg-[#111722] border border-[#324467]/30 transition-all duration-300 hover:border-primary/80 hover:shadow-2xl hover:shadow-primary/10">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-12" data-alt="Spotify logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBE6YATfJluRq5jrETePYMbdJ-ino0DPKICZcDNxn6u1zqMTONWFFVqatACy_dm72VzCIZNyHOxwAyd4vN2wsb9ijdK5l63iSWCCdvBaskmVJzOcqTT9s9M72kQMaxweD55jY7DRMOp1Nda-bJhmd844WR3UlGnfrD2xLGoqT4nEReNNpw-YtP1eoNCUK1XFHF67wkQNueXtbyWBnKxFv94UaqkDtHReSy3RjHa3ca8Hm45_zYVRREFgCoAjuVNYh0dWhTdKP-YLNc5");'></div>
+<div>
+<h3 class="text-white text-lg font-bold">Spotify</h3>
+<p class="text-green-400 text-sm font-medium">Active</p>
+</div>
+</div>
+<button class="text-[#92a4c9] hover:text-white transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<div>
+<p class="text-white text-2xl font-bold">$9.99<span class="text-[#92a4c9] text-base font-normal"> / month</span></p>
+<p class="text-[#92a4c9] text-sm mt-1">Renews on Oct 25, 2024</p>
+</div>
+</div>
+<!-- Subscription Card 2 -->
+<div class="flex flex-col gap-4 rounded-xl p-6 bg-[#111722] border border-[#324467]/30 transition-all duration-300 hover:border-primary/80 hover:shadow-2xl hover:shadow-primary/10">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-12" data-alt="Netflix logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBcBeLR39vySpu59r61RDRyMwVUtG12cqWWujzH5rOo_x8ygJl-05KnH_yzAopzI1uq3aFH29CduLSzgi49ipJoDn8DfqqvVOOFL5GzIklGwpdG-Re6tLqeVZeh4s16RNL6EytB0p8FcLf3uiQAwGLtxOUyD8NEHpuHjmoJSPaSzXlwbZ__o2VPEMmZ3Zz8s3VA_BGtu1dd-fjgeo6DHy70YJAmGzlODtSSEqcNkbIj4GtUIZPD7pDysrCr54fhu3Gy1K2SRQXEOa2p");'></div>
+<div>
+<h3 class="text-white text-lg font-bold">Netflix</h3>
+<p class="text-green-400 text-sm font-medium">Active</p>
+</div>
+</div>
+<button class="text-[#92a4c9] hover:text-white transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<div>
+<p class="text-white text-2xl font-bold">$15.49<span class="text-[#92a4c9] text-base font-normal"> / month</span></p>
+<p class="text-[#92a4c9] text-sm mt-1">Renews on Oct 15, 2024</p>
+</div>
+</div>
+<!-- Subscription Card 3 -->
+<div class="flex flex-col gap-4 rounded-xl p-6 bg-[#111722] border border-[#324467]/30 transition-all duration-300 hover:border-primary/80 hover:shadow-2xl hover:shadow-primary/10">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-12" data-alt="Adobe Creative Cloud logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD8ssu50pYLX0mt2K5TnfW7NjqOZAfhRs47EoSPe0rw9EC525rqWFmd8BxH0wi-ZNTjx3isISzRIyFUpG8V383p_hDodv3DsyPcJxpu6_klLD0obpIbek5i_6roiJ5TbO7JQ2C4nlI3r8kQTJKY5JfkMBQFNfqOP0OWv8RyDlFvFwsrXcFACDhsefDuE5jkTQRNC9-SH_eb-JQOV5gOE5fE3StRCUMGfQ8ntLZeXBBrkSKFl8fsHbNlrYkRUiPtjzbg3nO8dUbNT9yN");'></div>
+<div>
+<h3 class="text-white text-lg font-bold">Adobe CC</h3>
+<p class="text-yellow-400 text-sm font-medium">Expiring Soon</p>
+</div>
+</div>
+<button class="text-[#92a4c9] hover:text-white transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<div>
+<p class="text-white text-2xl font-bold">$54.99<span class="text-[#92a4c9] text-base font-normal"> / month</span></p>
+<p class="text-[#92a4c9] text-sm mt-1">Renews on Sep 30, 2024</p>
+</div>
+</div>
+<!-- Subscription Card 4 -->
+<div class="flex flex-col gap-4 rounded-xl p-6 bg-[#111722] border border-[#324467]/30 transition-all duration-300 hover:border-primary/80 hover:shadow-2xl hover:shadow-primary/10">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-12" data-alt="Notion logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA3Gj9yUYS6WcZoPsjm3UGCgKSjHuE1asLp1TsDSLikk9ZtrIs7fcrVMEEQ6VWSIrkHkEEO0wJ8MYgVhJfJRKWnPxbquQphGAYtmiqd8e0fMsjjLJShL01qYoiAKRscz7jsA97y2e8kVzu-CXM3pOcVJWsDevunFMThUUpW59pOP7ixnI4ebWWgCLABwgUntNb23TxtnI7TvagPIEkZhKM6KO0ZyoZ-g4S1sTv3ClG9D4nxeWZ1cdJ2xcnjMvA6qd4Kiq2je7iJwym0");'></div>
+<div>
+<h3 class="text-white text-lg font-bold">Notion</h3>
+<p class="text-green-400 text-sm font-medium">Active</p>
+</div>
+</div>
+<button class="text-[#92a4c9] hover:text-white transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<div>
+<p class="text-white text-2xl font-bold">$8.00<span class="text-[#92a4c9] text-base font-normal"> / month</span></p>
+<p class="text-[#92a4c9] text-sm mt-1">Renews on Oct 20, 2024</p>
+</div>
+</div>
+<!-- Subscription Card 5 -->
+<div class="flex flex-col gap-4 rounded-xl p-6 bg-[#111722] border border-[#324467]/30 transition-all duration-300 hover:border-primary/80 hover:shadow-2xl hover:shadow-primary/10">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-12" data-alt="Figma logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAhgW3dKEZRS5jJVrlostrKmOzd8RSNT5dojq2dsYE90fhEPmsU3zInJJsugJdivPqEdVzX-7dBJ09qSYvcK61MQYvQJw6mPADZdd1ZJ6jCHDj4WYbW00WVEgpOiH7HruS8dGI2oudowZxh2zeJ1OOmXYm6ATHMsf_0wa70Z9rh7KVO9WNv3_qGzSZPCyoKaxktVtkOyiraGiagBmzzIs_aGJEIPOBquxIFT-VhmtMbCmtVLKSiYfd7N5ZUjB8PKfOCdCNR-n08MC0z");'></div>
+<div>
+<h3 class="text-white text-lg font-bold">Figma</h3>
+<p class="text-red-500 text-sm font-medium">Canceled</p>
+</div>
+</div>
+<button class="text-[#92a4c9] hover:text-white transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<div>
+<p class="text-white text-2xl font-bold">$12.00<span class="text-[#92a4c9] text-base font-normal"> / month</span></p>
+<p class="text-[#92a4c9] text-sm mt-1">Expired on Aug 12, 2024</p>
+</div>
+</div>
+<!-- Subscription Card 6 -->
+<div class="flex flex-col gap-4 rounded-xl p-6 bg-[#111722] border border-[#324467]/30 transition-all duration-300 hover:border-primary/80 hover:shadow-2xl hover:shadow-primary/10">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-12" data-alt="YouTube Premium logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCqF5nHeP6bXjf8VdZscfoZfiYNpKSz2U3r0Bjd9ZwDDqQaTvUNb3uZHGvpmJzVRlFavIDMX0Eczsgo_8KMLX_-idoGQNl0Fmd8kYk7B2G5stE16I3shzsyfUZlUOxNbLd1PwVWllVBIb6s912a4ygH3nn5hBoSSoG8VtGEiX-FtjX_5fP-KpyHFewL4eHoVmRp_OtAGaGGk2w8_weQu3D3q0HhoHKSOX8Uw2OCRUsvvsnp5MA0Vbkx_NJwtjYkYgj2IeS2z8IUyGEv");'></div>
+<div>
+<h3 class="text-white text-lg font-bold">YouTube Premium</h3>
+<p class="text-green-400 text-sm font-medium">Active</p>
+</div>
+</div>
+<button class="text-[#92a4c9] hover:text-white transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<div>
+<p class="text-white text-2xl font-bold">$11.99<span class="text-[#92a4c9] text-base font-normal"> / month</span></p>
+<p class="text-[#92a4c9] text-sm mt-1">Renews on Oct 05, 2024</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

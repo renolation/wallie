@@ -28,7 +28,7 @@ export const seedCategoriesEndpoint: Endpoint = {
   path: '/seed/categories',
   method: 'post',
   handler: async (req) => {
-    if (!req.user || req.user.role !== 'admin') {
+    if (!req.user || !req.user.roles?.includes('admin')) {
       return Response.json({ error: 'Unauthorized - Admin only' }, { status: 401 })
     }
 

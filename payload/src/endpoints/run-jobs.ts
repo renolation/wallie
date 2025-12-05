@@ -19,7 +19,7 @@ export const runNotificationJobsEndpoint: Endpoint = {
     const cronSecret = req.headers.get('x-cron-secret')
     const expectedSecret = process.env.CRON_SECRET
 
-    const isAdmin = req.user?.role === 'admin'
+    const isAdmin = req.user?.roles?.includes('admin')
     const hasValidSecret = expectedSecret && cronSecret === expectedSecret
 
     if (!isAdmin && !hasValidSecret) {

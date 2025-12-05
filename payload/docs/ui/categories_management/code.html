@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Categories Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#2b6cee",
+              "background-light": "#f6f6f8",
+              "background-dark": "#101622",
+            },
+            fontFamily: {
+              "display": ["Manrope", "sans-serif"]
+            },
+            borderRadius: {
+              "DEFAULT": "0.25rem",
+              "lg": "0.5rem",
+              "xl": "0.75rem",
+              "full": "9999px"
+            },
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+      }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="relative flex h-auto min-h-screen w-full flex-col dark group/design-root overflow-x-hidden">
+<div class="flex flex-row min-h-screen">
+<!-- Side Navigation -->
+<aside class="w-72 flex-shrink-0 bg-[#19202e] p-4 flex flex-col justify-between border-r border-white/10">
+<div class="flex flex-col gap-8">
+<div class="flex items-center gap-3 px-2">
+<span class="material-symbols-outlined text-primary text-3xl">all_inclusive</span>
+<h1 class="text-white text-xl font-bold">Substrack</h1>
+</div>
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2.5 text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">dashboard</span>
+<p class="text-sm font-medium leading-normal">Dashboard</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">credit_card</span>
+<p class="text-sm font-medium leading-normal">Subscriptions</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary text-white" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">folder</span>
+<p class="text-sm font-medium leading-normal">Categories</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">calendar_today</span>
+<p class="text-sm font-medium leading-normal">Calendar</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">settings</span>
+<p class="text-sm font-medium leading-normal">Settings</p>
+</a>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2.5 text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">help</span>
+<p class="text-sm font-medium leading-normal">Help Center</p>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">logout</span>
+<p class="text-sm font-medium leading-normal">Logout</p>
+</a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 p-8 lg:p-12">
+<div class="flex flex-col gap-8">
+<!-- Page Heading -->
+<div class="flex flex-wrap justify-between items-center gap-4">
+<h1 class="text-white text-4xl font-black leading-tight tracking-[-0.033em]">Categories Management</h1>
+<button class="flex items-center justify-center gap-2 overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="truncate">Create New Category</span>
+</button>
+</div>
+<!-- Two-Column Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Left Column: Categories List -->
+<div class="lg:col-span-1 flex flex-col gap-4">
+<div class="flex items-center gap-4 bg-[#19202e] px-4 py-3 min-h-[72px] justify-between border-2 border-primary rounded-xl">
+<div class="flex items-center gap-4">
+<div class="text-white flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12">
+<span class="material-symbols-outlined">list</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-white text-base font-medium leading-normal line-clamp-1">All Subscriptions</p>
+<p class="text-white/60 text-sm font-normal leading-normal line-clamp-2">34 subscriptions</p>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-[#19202e] hover:bg-[#232f48]/80 transition-colors px-4 py-3 min-h-[72px] justify-between rounded-xl">
+<div class="flex items-center gap-4">
+<div class="text-white flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12">
+<span class="material-symbols-outlined">folder</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-white text-base font-medium leading-normal line-clamp-1">Entertainment</p>
+<p class="text-white/60 text-sm font-normal leading-normal line-clamp-2">8 subscriptions</p>
+</div>
+</div>
+<div class="shrink-0">
+<button class="text-white/60 hover:text-white flex size-8 items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-[#19202e] hover:bg-[#232f48]/80 transition-colors px-4 py-3 min-h-[72px] justify-between rounded-xl">
+<div class="flex items-center gap-4">
+<div class="text-white flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12">
+<span class="material-symbols-outlined">folder</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-white text-base font-medium leading-normal line-clamp-1">Productivity</p>
+<p class="text-white/60 text-sm font-normal leading-normal line-clamp-2">12 subscriptions</p>
+</div>
+</div>
+<div class="shrink-0">
+<button class="text-white/60 hover:text-white flex size-8 items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-[#19202e] hover:bg-[#232f48]/80 transition-colors px-4 py-3 min-h-[72px] justify-between rounded-xl">
+<div class="flex items-center gap-4">
+<div class="text-white flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12">
+<span class="material-symbols-outlined">folder</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-white text-base font-medium leading-normal line-clamp-1">Utilities</p>
+<p class="text-white/60 text-sm font-normal leading-normal line-clamp-2">5 subscriptions</p>
+</div>
+</div>
+<div class="shrink-0">
+<button class="text-white/60 hover:text-white flex size-8 items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Column: Subscriptions Grid -->
+<div class="lg:col-span-2 flex flex-col gap-6 bg-[#19202e] p-6 rounded-xl">
+<div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+<h2 class="text-white text-2xl font-bold">Subscriptions in <span class="text-primary">'All Subscriptions'</span></h2>
+<div class="relative w-full sm:w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/50">search</span>
+<input class="w-full bg-[#101622] border border-white/10 rounded-lg h-11 pl-10 pr-4 text-white placeholder:text-white/50 focus:ring-2 focus:ring-primary focus:border-primary" placeholder="Search subscriptions..." type="text"/>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+<!-- Subscription Card -->
+<div class="flex flex-col gap-4 bg-[#101622] p-4 rounded-lg border border-white/10">
+<div class="flex justify-between items-start">
+<img class="size-12 rounded-lg" data-alt="Spotify Logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUQZtO-6SRcujF-TAl-5EPpnL5HA3oy85fNhWjXj9KZKHdZyn1RJWnzWeiVvr8-8yXTzfA5apmz07G25DFssOcziuu_S4TO0qBavZNX4b33RCFbjsIVWuDCveEAtDiYuEmGPt4uLpRiLGPBFiqG8m0zvdqkVKFugU2zhljyFJ9H4RonWe8Qr7A7FzGl7psK3RkiUVKOgqKOHw57Em5wtA_XDGObC-3JuuHbOlItU5Lf8s_FmaXBcigF4dCdx-js97IUauXvGOPlbMt"/>
+<button class="text-white/60 hover:text-white flex size-7 items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-base">more_horiz</span>
+</button>
+</div>
+<div class="flex flex-col">
+<p class="text-white font-semibold">Spotify</p>
+<p class="text-white/60 text-sm">Renews on 24 Dec 2024</p>
+</div>
+<button class="w-full text-center bg-primary/20 text-primary text-sm font-bold py-2 rounded-md hover:bg-primary/30 transition-colors">Reassign</button>
+</div>
+<!-- Subscription Card -->
+<div class="flex flex-col gap-4 bg-[#101622] p-4 rounded-lg border border-white/10">
+<div class="flex justify-between items-start">
+<img class="size-12 rounded-lg" data-alt="Netflix Logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgbfBG3tNf4QcyVMKEIIQqOkhCeRIoBfr_It25nfWgB3a7J79AlNGK77wnb5tLtcXiOMfO2AVSFKs0gfKvjhKZKPlZUdTI9GfMyNZsE002QkT5VyUYzPNhJaXq5HT62Al0qAcYWZhmv8sHHxxoFWwdCUUnviPxG30T3ebzIrcexM9pciz1AYNsOB6czS0cKWAY4r1Z6MsoQp680byGsw_DWJeOTJtJglqX4BN5PTWLaBHR_M9Whwv7zXGTlAmW9dg3yg0SaAWeSvGS"/>
+<button class="text-white/60 hover:text-white flex size-7 items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-base">more_horiz</span>
+</button>
+</div>
+<div class="flex flex-col">
+<p class="text-white font-semibold">Netflix</p>
+<p class="text-white/60 text-sm">Renews on 15 Jan 2025</p>
+</div>
+<button class="w-full text-center bg-primary/20 text-primary text-sm font-bold py-2 rounded-md hover:bg-primary/30 transition-colors">Reassign</button>
+</div>
+<!-- Subscription Card -->
+<div class="flex flex-col gap-4 bg-[#101622] p-4 rounded-lg border border-white/10">
+<div class="flex justify-between items-start">
+<img class="size-12 rounded-lg" data-alt="React Pro Logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmd6YYdMF5oKFKJy9q67TklKIQPOPzzF3kxOn8ZYKHkU5a_xxX-ABKQPFvLnpBmLHZ_T6XbDDjCkMB473RMhEvTGhZPdGzveR3NbuZl9JcGEjgoS3AW8tY9vbOYDMK4bvraZi-h3Hrk8Iz5U3eF2mL8juc0IjwNGlCI6h8aLaM2qtv6fekfxaM0MlCn1hXEYijp4g3jFMlSfhWvZh42ieyzqLZHJKuWX4v1OkdST-3yTaltrjpA9JXpr-uRehVfw-MMH0LBjgyCk_w"/>
+<button class="text-white/60 hover:text-white flex size-7 items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-base">more_horiz</span>
+</button>
+</div>
+<div class="flex flex-col">
+<p class="text-white font-semibold">React Pro</p>
+<p class="text-white/60 text-sm">Renews on 01 Feb 2025</p>
+</div>
+<button class="w-full text-center bg-primary/20 text-primary text-sm font-bold py-2 rounded-md hover:bg-primary/30 transition-colors">Reassign</button>
+</div>
+<!-- Empty State Card (Example) -->
+<div class="md:col-span-2 xl:col-span-3 flex flex-col items-center justify-center gap-4 bg-[#101622] p-8 rounded-lg border-2 border-dashed border-white/10 h-64">
+<span class="material-symbols-outlined text-5xl text-white/30">category</span>
+<p class="text-white/60 text-center">This category is empty.</p>
+<p class="text-white/40 text-sm text-center">Drag subscriptions here or use the 'Reassign' button to add them.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

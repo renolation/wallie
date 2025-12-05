@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Family Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#2b6cee",
+              "background-light": "#f6f6f8",
+              "background-dark": "#101622",
+            },
+            fontFamily: {
+              "display": ["Manrope", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="flex min-h-screen w-full flex-col">
+<!-- Top Navigation Bar -->
+<header class="flex h-16 items-center justify-between whitespace-nowrap border-b border-solid border-white/10 px-6 lg:px-10">
+<div class="flex items-center gap-4 text-white">
+<span class="material-symbols-outlined text-primary text-2xl">groups</span>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Family Management</h2>
+</div>
+<div class="hidden items-center gap-9 lg:flex">
+<a class="text-white text-sm font-medium leading-normal" href="#">Dashboard</a>
+<a class="text-white text-sm font-medium leading-normal" href="#">Subscriptions</a>
+<a class="text-white text-sm font-medium leading-normal" href="#">Billing</a>
+<a class="text-white text-sm font-medium leading-normal" href="#">Settings</a>
+</div>
+<div class="flex flex-1 justify-end gap-2">
+<button class="hidden min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] sm:flex">
+<span class="truncate">Upgrade</span>
+</button>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-white/5 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+<span class="material-symbols-outlined text-white text-xl">notifications</span>
+</button>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-white/5 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+<span class="material-symbols-outlined text-white text-xl">help</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User avatar placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBfVbDTnY4V2u5pXjAs5CfQ12g2lg1lOHepXzt_sAndRf8W84qlCXt6Lx9iQ-frzHcpBfF9Y7SkFPhPgh-qxskbG-BR315D6XKGnqs0hZejdRij9myN59l-zagq8VTa7Xvky2kIFCuOieOce4vLHZv4ZtnNJSkjFIb4oXUyHJlSweG-z2vwlPr29CXUiXnNuaT9M8okyLc-Usi5mDWisT-t0ID669HanGVZs-X3j5Vx20rk4FP7-hVodLT-3x0SqI2hsDGLsciToJF7");'></div>
+</div>
+</header>
+<!-- Main Content -->
+<div class="flex flex-1">
+<!-- Sidebar -->
+<aside class="hidden w-80 flex-col border-r border-solid border-white/10 p-6 lg:flex">
+<div class="flex flex-col gap-6">
+<button class="flex w-full min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg h-12 px-4 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em]">
+<span class="material-symbols-outlined">person_add</span>
+<span class="truncate">Invite New Member</span>
+</button>
+<!-- Stats -->
+<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-2 rounded-xl p-6 border border-white/10 bg-white/5">
+<p class="text-white text-base font-medium leading-normal">Total Monthly Cost</p>
+<p class="text-white tracking-light text-2xl font-bold leading-tight">$89.99</p>
+<p class="text-[#0bda5e] text-sm font-medium leading-normal">+5% from last month</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-6 border border-white/10 bg-white/5">
+<p class="text-white text-base font-medium leading-normal">Cost Per Member</p>
+<p class="text-white tracking-light text-2xl font-bold leading-tight">$22.50</p>
+<p class="text-[#fa6238] text-sm font-medium leading-normal">-2% from last month</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Page Content -->
+<main class="flex-1 p-6 lg:p-10">
+<div class="flex flex-col gap-8">
+<!-- Page Header & Search -->
+<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+<h1 class="text-white text-4xl font-black leading-tight tracking-[-0.033em]">Family Management</h1>
+<div class="w-full max-w-xs">
+<label class="flex flex-col min-w-40 h-12 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-[#92a4c9] flex border-none bg-white/5 items-center justify-center pl-4 rounded-l-lg border-r-0">
+<span class="material-symbols-outlined text-2xl">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-white focus:outline-0 focus:ring-0 border-none bg-white/5 focus:border-none h-full placeholder:text-[#92a4c9] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Find a family member..." value=""/>
+</div>
+</label>
+</div>
+</div>
+<!-- Member Cards Grid -->
+<div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+<!-- Member Card: Alex Doe -->
+<div class="flex flex-col gap-4 rounded-xl border border-white/10 bg-white/5 p-6 transition-all hover:bg-white/[.07] hover:border-white/20">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" data-alt="Avatar of Alex Doe" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAXVy5V_3_mS3R5MLqQrExdH9V1v64tLtve3tgsjUNCif6n-e69J6Gb0Fr24dKTBoKTUCK5sR1FORSN50TwuNqPIyfGGzFeoeIox9HibzvDqTUJxTMXjqOvEVw5XX0kE3FtaeihCdpoF83GUWCQjkpUaYLaAFPWAOJTCKt_9decMeTHUZoT8SBCHd5Vb4ljpDB2bBKWyrK9gpinQpgQ5eabCphZYlHWKI4mdIsxQwVpeo0TORfbjdVul8IrCnRMqglIVQ95YHv7yfL9");'></div>
+<div>
+<h3 class="text-white text-lg font-bold">Alex Doe</h3>
+<p class="text-[#92a4c9] text-sm">Admin</p>
+</div>
+</div>
+<button class="rounded-full p-2 text-[#92a4c9] hover:bg-white/10 hover:text-white">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div>
+<p class="text-sm font-medium text-white mb-2">Subscriptions</p>
+<div class="flex flex-wrap gap-2">
+<div class="flex items-center gap-2 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary">
+<span class="material-symbols-outlined text-base">movie</span>
+<span>Netflix</span>
+</div>
+<div class="flex items-center gap-2 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary">
+<span class="material-symbols-outlined text-base">music_note</span>
+<span>Spotify</span>
+</div>
+<div class="flex items-center gap-2 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary">
+<span class="material-symbols-outlined text-base">cloud</span>
+<span>Cloud Storage</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Member Card: Jane Smith -->
+<div class="flex flex-col gap-4 rounded-xl border border-white/10 bg-white/5 p-6 transition-all hover:bg-white/[.07] hover:border-white/20">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" data-alt="Avatar of Jane Smith" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCf8ivisJhGGEYD4zp9RIjUZR0Qy4JL77e1w60YKBt_zNtF8K49vA8MxWqMd5WMmx3-yVCjPbbnWLDw-Of51ABLY1NpWJnvzZtNtX-DhaJxALDAC1dgyj1SRagqlQTUb-D8T431SID253jJw2wRwJjoK9KJR9hJEH-X-7xu9LAJ1Lq3reX1jyBtceofDMnMkYIo3YE12Vvkbr2EA7ga8-ZO53oV3g9wFAnqr8kLeO-NAB_d_M0rhEoJD0EmslgSiiwYkFGUsZVCCvUZ");'></div>
+<div>
+<h3 class="text-white text-lg font-bold">Jane Smith</h3>
+<p class="text-[#92a4c9] text-sm">Member</p>
+</div>
+</div>
+<button class="rounded-full p-2 text-[#92a4c9] hover:bg-white/10 hover:text-white">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div>
+<p class="text-sm font-medium text-white mb-2">Subscriptions</p>
+<div class="flex flex-wrap gap-2">
+<div class="flex items-center gap-2 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary">
+<span class="material-symbols-outlined text-base">movie</span>
+<span>Netflix</span>
+</div>
+<div class="flex items-center gap-2 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary">
+<span class="material-symbols-outlined text-base">music_note</span>
+<span>Spotify</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Member Card: Mike Johnson -->
+<div class="flex flex-col gap-4 rounded-xl border border-white/10 bg-white/5 p-6 transition-all hover:bg-white/[.07] hover:border-white/20">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12" data-alt="Avatar of Mike Johnson" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBVbU46cBp1OGnJipUHcTVCQ5LFauX1hRZyEQtwDV1AGxUY_kOqIMzwtM9yfLFA-qDotPTLXhNO-j8DyXiL5ZfoSZA-8nprjdl4U480aJ07m5L3_HDsIcTsvaFI6UezSdlu-IcSl61TmdRA70hdxchj6sfPZ9wu9apibBEye03ThKPluKofMj3cVuKQQws0Y98PdX50z_NGdpQP2zY4HpMMNuOz1ERqy3kH-S9y8X31_JotWKOHsgQoPRYZ5Vb4syb5b5fLk0godurT");'></div>
+<div>
+<h3 class="text-white text-lg font-bold">Mike Johnson</h3>
+<p class="text-[#92a4c9] text-sm">Member</p>
+</div>
+</div>
+<button class="rounded-full p-2 text-[#92a4c9] hover:bg-white/10 hover:text-white">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div>
+<p class="text-sm font-medium text-white mb-2">Subscriptions</p>
+<div class="flex flex-wrap gap-2">
+<div class="flex items-center gap-2 rounded bg-primary/20 px-2 py-1 text-xs font-medium text-primary">
+<span class="material-symbols-outlined text-base">cloud</span>
+<span>Cloud Storage</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Add New Member Card -->
+<div class="flex min-h-[200px] cursor-pointer flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-white/20 bg-transparent p-6 text-center text-[#92a4c9] transition-all hover:border-primary hover:bg-primary/10 hover:text-primary">
+<div class="flex size-12 items-center justify-center rounded-full bg-white/10">
+<span class="material-symbols-outlined text-3xl">add</span>
+</div>
+<p class="text-lg font-bold">Add New Member</p>
+<p class="text-sm">Invite someone to join your family group.</p>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

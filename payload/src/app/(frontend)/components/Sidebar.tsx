@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, CreditCard, BarChart3, Settings, LogOut, Shield } from 'lucide-react'
+import { LayoutDashboard, CreditCard, Users, FolderOpen, Calendar, Settings, LogOut, Shield } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface User {
@@ -25,9 +25,19 @@ const menuItems = [
     icon: CreditCard,
   },
   {
-    label: 'Analytics',
-    href: '/analytics',
-    icon: BarChart3,
+    label: 'Family',
+    href: '/family',
+    icon: Users,
+  },
+  {
+    label: 'Categories',
+    href: '/categories',
+    icon: FolderOpen,
+  },
+  {
+    label: 'Calendar',
+    href: '/calendar',
+    icon: Calendar,
   },
   {
     label: 'Settings',

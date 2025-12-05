@@ -49,8 +49,7 @@ export const dashboardSummaryEndpoint: Endpoint = {
       const subscriptions = await req.payload.find({
         collection: 'subscriptions',
         where: {
-          user: { equals: req.user.id },
-          status: { in: ['active', 'trial'] },
+          owner: { equals: req.user.id },
         },
         depth: 1,
         limit: 1000,
@@ -74,17 +73,24 @@ export const dashboardSummaryEndpoint: Endpoint = {
       const spendByCategory: Record<string, { amount: number; count: number }> = {}
 
       for (const sub of subscriptions.docs) {
-        // Normalize to monthly spend
+        // Normalize to monthly spend based on billing cycle
+        const billingCycleToFreq: Record<string, string> = {
+          daily: 'days',
+          weekly: 'weeks',
+          monthly: 'months',
+          yearly: 'years',
+        }
+        const freq = billingCycleToFreq[sub.billingCycle || 'monthly'] || 'months'
         const monthlyAmount = normalizeToMonthly(
-          sub.price,
-          sub.paymentEvery || 1,
-          sub.frequency || 'months',
+          sub.amount || 0,
+          sub.frequency || 1,
+          freq,
         )
         totalMonthlySpend += monthlyAmount
 
         // Check upcoming payments
-        if (sub.nextPaymentDate) {
-          const nextPayment = new Date(sub.nextPaymentDate)
+        if (sub.nextBillingDate) {
+          const nextPayment = new Date(sub.nextBillingDate)
           if (nextPayment >= now && nextPayment <= sevenDaysFromNow) {
             const daysUntil = Math.ceil(
               (nextPayment.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
@@ -92,11 +98,11 @@ export const dashboardSummaryEndpoint: Endpoint = {
             upcomingPayments.push({
               id: sub.id,
               name: sub.name,
-              price: sub.price,
+              price: sub.amount || 0,
               currency: sub.currency || 'USD',
-              nextPaymentDate: sub.nextPaymentDate,
+              nextPaymentDate: sub.nextBillingDate,
               daysUntil,
-              logoUrl: sub.logoUrl || undefined,
+              logoUrl: sub.logo || undefined,
             })
           }
         }
@@ -127,8 +133,8 @@ export const dashboardSummaryEndpoint: Endpoint = {
 
       return Response.json({
         totalSubscriptions: subscriptions.totalDocs,
-        activeSubscriptions: subscriptions.docs.filter((s) => s.status === 'active').length,
-        trialSubscriptions: subscriptions.docs.filter((s) => s.status === 'trial').length,
+        activeSubscriptions: subscriptions.docs.filter((s) => s.autoRenew).length,
+        trialSubscriptions: subscriptions.docs.filter((s) => s.freeTrialEndDate && new Date(s.freeTrialEndDate) > now).length,
         totalMonthlySpend: Math.round(totalMonthlySpend * 100) / 100,
         totalYearlySpend: Math.round(totalMonthlySpend * 12 * 100) / 100,
         upcomingPaymentsCount: upcomingPayments.length,

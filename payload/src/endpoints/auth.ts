@@ -59,8 +59,8 @@ export const registerEndpoint: Endpoint = {
         data: {
           email: body.email.toLowerCase(),
           password: body.password,
-          name: body.name || '',
-          role: 'user', // Always create as regular user
+          firstName: body.name || '',
+          roles: ['user'], // Always create as regular user
         },
       })
 
@@ -78,7 +78,7 @@ export const registerEndpoint: Endpoint = {
         user: {
           id: user.id,
           email: user.email,
-          name: user.name,
+          name: user.firstName,
         },
         token: loginResult.token,
         exp: loginResult.exp,
