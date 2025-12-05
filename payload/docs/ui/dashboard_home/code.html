@@ -1,191 +1,226 @@
 <!DOCTYPE html>
-
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Dashboard Home</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script>
       tailwind.config = {
         darkMode: "class",
         theme: {
           extend: {
             colors: {
-              "primary": "#2b6cee",
-              "background-light": "#f6f6f8",
-              "background-dark": "#101622",
+              primary: {
+                DEFAULT: "#00ADB5", // Teal
+                foreground: "#222831", // Dark text for contrast on teal
+              },
+              background: "#222831", // Dark Gray/Blue Background
+              foreground: "#EEEEEE", // Light Gray/White Text
+              card: {
+                DEFAULT: "#222831", // Matching background for clean flat look
+                foreground: "#EEEEEE",
+              },
+              border: "#393E46", // Lighter Gray for borders
+              muted: {
+                  DEFAULT: "#393E46", // Secondary background
+                  foreground: "#9ca3af", // Muted text (gray-400)
+              },
+              accent: {
+                  DEFAULT: "#393E46",
+                  foreground: "#EEEEEE"
+              }
             },
             fontFamily: {
               "display": ["Manrope", "sans-serif"]
             },
-            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            borderRadius: {
+              sm: "0.25rem",
+              DEFAULT: "0.5rem", 
+              lg: "0.75rem", 
+              xl: "1rem"
+            },
           },
         },
       }
     </script>
+<style>
+      .lucide {
+        width: 1rem;
+        height: 1rem;
+      }
+    </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
+<body class="bg-background font-display text-foreground">
 <div class="relative flex min-h-screen w-full">
-<!-- SideNavBar -->
-<aside class="flex h-screen w-64 flex-col justify-between border-r border-gray-200/10 bg-background-light p-4 dark:bg-background-dark/50">
-<div class="flex flex-col gap-8">
-<div class="flex items-center gap-3 px-3">
-<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="Subspace company logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDt2KdRPQd2PuiV8RJ5jJ4CKsiSu3_fnk56jfhtD9HB5-ihieuVKvXrka43POspxMDeE8UoCG74Q1sD7X_XVhi8X2R-rHv2k7az1bM_c6j5parG5lnO1Go8mYYR-lv5Kx4KgftmEQAvot6FhxMNgYKcuwZZHwwXdb1hnWGJNgwiuxm-zF_3F1UQYuf0S7yQCq6aPKvJaGD2HJvwtAQosULaML7yOw7J0AaLUw1FOf9TjcZ-kZjqKbdUanMCNwx78U13CxNi-RSHiE-L");'></div>
-<h1 class="text-gray-900 dark:text-white text-lg font-bold">Subspace</h1>
+<aside class="flex h-screen w-64 shrink-0 flex-col justify-between border-r border-border bg-card p-4">
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-3 px-3 py-2">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-md size-8" data-alt="Subspace company logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDt2KdRPQd2PuiV8RJ5jJ4CKsiSu3_fnk56jfhtD9HB5-ihieuVKvXrka43POspxMDeE8UoCG74Q1sD7X_XVhi8X2R-rHv2k7az1bM_c6j5parG5lnO1Go8mYYR-lv5Kx4KgftmEQAvot6FhxMNgYKcuwZZHwwXdb1hnWGJNgwiuxm-zF_3F1UQYuf0S7yQCq6aPKvJaGD2HJvwtAQosULaML7yOw7J0AaLUw1FOf9TjcZ-kZjqKbdUanMCNwx78U13CxNi-RSHiE-L");'></div>
+<h1 class="text-foreground text-lg font-bold">Subspace</h1>
 </div>
-<nav class="flex flex-col gap-2">
-<a class="flex items-center gap-3 rounded-lg bg-primary/10 dark:bg-primary/20 px-3 py-2 text-primary dark:text-white" href="#">
-<span class="material-symbols-outlined">dashboard</span>
+<nav class="flex flex-col gap-1 px-2">
+<a class="flex items-center gap-3 rounded-md bg-muted px-3 py-2 text-foreground shadow-sm" href="#">
+<i class="lucide" data-lucide="layout-dashboard"></i>
 <p class="text-sm font-medium">Dashboard</p>
 </a>
-<a class="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5" href="#">
-<span class="material-symbols-outlined">subscriptions</span>
+<a class="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors" href="#">
+<i class="lucide" data-lucide="layers-3"></i>
 <p class="text-sm font-medium">Subscriptions</p>
 </a>
-<a class="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5" href="#">
-<span class="material-symbols-outlined">calendar_month</span>
+<a class="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors" href="#">
+<i class="lucide" data-lucide="calendar-days"></i>
 <p class="text-sm font-medium">Calendar</p>
 </a>
-<a class="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5" href="#">
-<span class="material-symbols-outlined">settings</span>
+<a class="flex items-center gap-3 rounded-md px-3 py-2 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors" href="#">
+<i class="lucide" data-lucide="settings"></i>
 <p class="text-sm font-medium">Settings</p>
 </a>
 </nav>
 </div>
-<div class="flex items-center gap-3 rounded-xl p-3">
-<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="User avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAwghDtXCL51j2QzNfauLuiP-7F8dCG0yjkauc0p6DByseXLuSMygPf9ZNEqHhHkSYjEYazzbRmyNXBUKJpPNaieVtQKa-VIbf0yfxQMoAbdn0fGvEFrBEFndKq3rTxe6JyoN2rVe9unXmP0J3x7xOgiEx7-Ld2F_mfVg_NVdT5JSxOiR0PLgSq3B7AhUkw10ySFStdA0EY8L55UMncK5p_0oCo3dWwTCi1YOBHiZfjanNw91HUtMpNMUELH6HM3O3F1AMtlRRUnLMy");'></div>
+<div class="border-t border-border pt-4">
+<div class="flex items-center gap-3 rounded-md p-2 hover:bg-muted/50 transition-colors cursor-pointer">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8" data-alt="User avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAwghDtXCL51j2QzNfauLuiP-7F8dCG0yjkauc0p6DByseXLuSMygPf9ZNEqHhHkSYjEYazzbRmyNXBUKJpPNaieVtQKa-VIbf0yfxQMoAbdn0fGvEFrBEFndKq3rTxe6JyoN2rVe9unXmP0J3x7xOgiEx7-Ld2F_mfVg_NVdT5JSxOiR0PLgSq3B7AhUkw10ySFStdA0EY8L55UMncK5p_0oCo3dWwTCi1YOBHiZfjanNw91HUtMpNMUELH6HM3O3F1AMtlRRUnLMy");'></div>
 <div class="flex flex-col">
-<p class="text-sm font-medium text-gray-900 dark:text-white">Alex Doe</p>
-<p class="text-xs text-gray-500 dark:text-gray-400">alex.doe@example.com</p>
+<p class="text-sm font-medium text-foreground">Alex Doe</p>
+<p class="text-xs text-muted-foreground">alex.doe@example.com</p>
 </div>
-<span class="material-symbols-outlined ml-auto text-gray-600 dark:text-gray-400">logout</span>
+<i class="lucide ml-auto text-muted-foreground" data-lucide="log-out"></i>
+</div>
 </div>
 </aside>
-<!-- Main Content -->
 <main class="flex-1 overflow-y-auto">
-<div class="p-8">
-<!-- ToolBar -->
+<div class="p-6">
 <header class="flex flex-wrap items-center justify-between gap-4">
-<!-- PageHeading -->
-<h1 class="text-4xl font-black leading-tight tracking-[-0.033em] text-gray-900 dark:text-white">Dashboard</h1>
-<div class="flex items-center gap-4">
+<h1 class="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
+<div class="flex items-center gap-2">
 <div class="relative w-64">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
-<input class="w-full rounded-lg border-gray-200/10 bg-white/5 py-2 pl-10 pr-4 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Search subscriptions..." type="text"/>
+<i class="lucide absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" data-lucide="search"></i>
+<input class="h-9 w-full rounded-md border border-border bg-background py-2 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background" placeholder="Search subscriptions..." type="text"/>
 </div>
-<button class="flex shrink-0 cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg h-10 bg-primary px-4 text-sm font-bold text-white">
-<span class="material-symbols-outlined text-base">add</span>
+<button class="flex shrink-0 cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-md h-9 bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm">
+<i class="lucide" data-lucide="plus"></i>
 <span class="truncate">Add Subscription</span>
 </button>
 </div>
 </header>
-<div class="mt-8">
-<!-- Stats -->
-<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-<div class="flex flex-col gap-2 rounded-xl border border-gray-200/10 bg-white/5 p-6">
-<p class="text-base font-medium text-gray-600 dark:text-gray-400">Total Monthly Spending</p>
-<p class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">$125.50</p>
+<div class="mt-4">
+<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+<div class="flex flex-col gap-1 rounded-lg border border-border bg-card p-4 shadow-sm hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+<i class="lucide text-primary" data-lucide="wallet"></i>
+<span>Total Monthly Spending</span>
 </div>
-<div class="flex flex-col gap-2 rounded-xl border border-gray-200/10 bg-white/5 p-6">
-<p class="text-base font-medium text-gray-600 dark:text-gray-400">Active Subscriptions</p>
-<p class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">12</p>
+<p class="text-2xl font-bold tracking-tight text-foreground">$125.50</p>
 </div>
-<div class="flex flex-col gap-2 rounded-xl border border-gray-200/10 bg-white/5 p-6">
-<p class="text-base font-medium text-gray-600 dark:text-gray-400">Next Renewal</p>
-<p class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Netflix - In 3 days</p>
+<div class="flex flex-col gap-1 rounded-lg border border-border bg-card p-4 shadow-sm hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+<i class="lucide text-primary" data-lucide="layers"></i>
+<span>Active Subscriptions</span>
+</div>
+<p class="text-2xl font-bold tracking-tight text-foreground">12</p>
+</div>
+<div class="flex flex-col gap-1 rounded-lg border border-border bg-card p-4 shadow-sm hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+<i class="lucide text-primary" data-lucide="bell-ring"></i>
+<span>Next Renewal</span>
+</div>
+<p class="text-2xl font-bold tracking-tight text-foreground">Netflix - In 3 days</p>
 </div>
 </div>
-<!-- Charts and Lists -->
-<div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+<div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
 <div class="lg:col-span-2">
-<!-- Charts -->
-<div class="flex h-full flex-col gap-2 rounded-xl border border-gray-200/10 bg-white/5 p-6">
-<p class="text-lg font-semibold text-gray-900 dark:text-white">Monthly Spending Overview</p>
+<div class="flex h-full flex-col rounded-lg border border-border bg-card p-4 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<p class="text-base font-semibold text-foreground">Monthly Spending Overview</p>
 <div class="flex items-baseline gap-2">
-<p class="truncate text-3xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white">$753.00</p>
-<p class="text-sm font-medium text-green-500">+$21.50</p>
-<p class="text-sm text-gray-500 dark:text-gray-400">vs last 6 months</p>
-</div>
-<div class="mt-4 grid min-h-[220px] grid-flow-col items-end justify-items-center gap-6 px-3">
-<div class="flex h-full w-full flex-col items-center justify-end gap-2">
-<div class="w-4 rounded bg-primary/20 dark:bg-primary/30" style="height: 60%;"></div>
-<p class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Jan</p>
-</div>
-<div class="flex h-full w-full flex-col items-center justify-end gap-2">
-<div class="w-4 rounded bg-primary/20 dark:bg-primary/30" style="height: 45%;"></div>
-<p class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Feb</p>
-</div>
-<div class="flex h-full w-full flex-col items-center justify-end gap-2">
-<div class="w-4 rounded bg-primary/20 dark:bg-primary/30" style="height: 70%;"></div>
-<p class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Mar</p>
-</div>
-<div class="flex h-full w-full flex-col items-center justify-end gap-2">
-<div class="w-4 rounded bg-primary" style="height: 95%;"></div>
-<p class="text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-white">Apr</p>
-</div>
-<div class="flex h-full w-full flex-col items-center justify-end gap-2">
-<div class="w-4 rounded bg-primary/20 dark:bg-primary/30" style="height: 55%;"></div>
-<p class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">May</p>
-</div>
-<div class="flex h-full w-full flex-col items-center justify-end gap-2">
-<div class="w-4 rounded bg-primary/20 dark:bg-primary/30" style="height: 80%;"></div>
-<p class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Jun</p>
+<p class="text-lg font-bold leading-tight tracking-tight text-foreground">$753.00</p>
+<p class="text-xs font-medium text-green-500">+$21.50</p>
+<p class="text-xs text-muted-foreground">vs last 6 mo</p>
 </div>
 </div>
+<div class="mt-auto grid min-h-[180px] grid-flow-col items-end justify-items-center gap-4 px-3">
+<div class="flex h-full w-full flex-col items-center justify-end gap-2 group">
+<div class="w-full max-w-[20px] rounded-t-sm bg-primary/20 group-hover:bg-primary/30 transition-all" style="height: 60%;"></div>
+<p class="text-xs font-medium uppercase tracking-wider text-muted-foreground group-hover:text-primary transition-colors">Jan</p>
+</div>
+<div class="flex h-full w-full flex-col items-center justify-end gap-2 group">
+<div class="w-full max-w-[20px] rounded-t-sm bg-primary/20 group-hover:bg-primary/30 transition-all" style="height: 45%;"></div>
+<p class="text-xs font-medium uppercase tracking-wider text-muted-foreground group-hover:text-primary transition-colors">Feb</p>
+</div>
+<div class="flex h-full w-full flex-col items-center justify-end gap-2 group">
+<div class="w-full max-w-[20px] rounded-t-sm bg-primary/20 group-hover:bg-primary/30 transition-all" style="height: 70%;"></div>
+<p class="text-xs font-medium uppercase tracking-wider text-muted-foreground group-hover:text-primary transition-colors">Mar</p>
+</div>
+<div class="flex h-full w-full flex-col items-center justify-end gap-2 group">
+<div class="w-full max-w-[20px] rounded-t-sm bg-primary group-hover:bg-primary/90 transition-all shadow-[0_0_10px_rgba(0,173,181,0.2)]" style="height: 95%;"></div>
+<p class="text-xs font-bold uppercase tracking-wider text-primary">Apr</p>
+</div>
+<div class="flex h-full w-full flex-col items-center justify-end gap-2 group">
+<div class="w-full max-w-[20px] rounded-t-sm bg-primary/20 group-hover:bg-primary/30 transition-all" style="height: 55%;"></div>
+<p class="text-xs font-medium uppercase tracking-wider text-muted-foreground group-hover:text-primary transition-colors">May</p>
+</div>
+<div class="flex h-full w-full flex-col items-center justify-end gap-2 group">
+<div class="w-full max-w-[20px] rounded-t-sm bg-primary/20 group-hover:bg-primary/30 transition-all" style="height: 80%;"></div>
+<p class="text-xs font-medium uppercase tracking-wider text-muted-foreground group-hover:text-primary transition-colors">Jun</p>
 </div>
 </div>
-<!-- Upcoming Renewals -->
-<div class="flex flex-col gap-4 rounded-xl border border-gray-200/10 bg-white/5 p-6">
-<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Upcoming Renewals</h3>
-<div class="flex flex-col gap-4">
-<div class="flex items-center gap-4">
-<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-700">
-<img alt="Spotify logo" class="h-5 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIjbqgBbpD66pdzDo15sgPtU3-n1G1IWUciFSaM6TdN3yuog6bmsrzp64UuxMfZHSkm6CVZJd-2RL1sNmDuSspzqiFPP23_i2ZKUylgorSrZobkakD5oTC7Z5ujV2byNeHA7JU8EEa5n6WSiJko7dpXyOO_XuJkutAJUdVRc4qlu5plGq7pqouU99q0QC0hndOzoqSUrDObZcA_99ix7kk9jEqDyPrvACcZZZPiLAAj_YWxVmlR3ChTI9o5RvHkwh8KITmGd40j-G6"/>
-</div>
-<div class="flex-1">
-<p class="font-medium text-gray-900 dark:text-white">Spotify</p>
-<p class="text-sm text-gray-500 dark:text-gray-400">Renews tomorrow</p>
-</div>
-<p class="font-semibold text-gray-900 dark:text-white">$9.99</p>
-</div>
-<div class="flex items-center gap-4">
-<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-700">
-<img alt="Netflix logo" class="h-4 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgrDpjUbUNENABDhEslpRcTaMMAkTi-jNXquXzTZuiQRYKnxQlQcD0pT2nE_zju-clRoYS8bljHSHl9dl8Cs1_XD-ahRNc8Rfq7_71pkL_ElN62w2Z14rYngcJbgxNxFED4u2pWdqp5kU2n028EMSk5goNeRH72MM0kAlYblFd241bDhquvEPE_JzWsqA2WGoTqDy1VUcZbXxQ1JYM0-eM8pIFTpgu3MrQfzCRKtacI6ocle0KSnW2a_s10JivRq5-bA8ttSpGmV3d"/>
-</div>
-<div class="flex-1">
-<p class="font-medium text-gray-900 dark:text-white">Netflix</p>
-<p class="text-sm text-gray-500 dark:text-gray-400">Renews in 3 days</p>
-</div>
-<p class="font-semibold text-gray-900 dark:text-white">$15.49</p>
-</div>
-<div class="flex items-center gap-4">
-<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-700">
-<img alt="YouTube Music logo" class="h-5 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuABt0JcrcX2B3r3jKlAq4K9PTIxGuzelqF5O-oGV3YCAGOmokQ6GfZRukBbcBzxKqClszSEg91GzyDPF4Xf4cb-LVQo2sXVwJ1ck9Fbc8dAJS8C2CSMiWZq0hovulCUPPULIzLIyqGdY6iLOGjWdKNBulB-aRJ66Ft9M4rV3XYlspPusnmMWX6HXjnnqDZQ0Y7aPijjnvxBBK6LkKci_8M9E0plIKtwb_Qx2gackA8v0Cn-mg7jJdv64rGU6HYlqSOZcPrjw3D7vcaW"/>
-</div>
-<div class="flex-1">
-<p class="font-medium text-gray-900 dark:text-white">Youtube Music</p>
-<p class="text-sm text-gray-500 dark:text-gray-400">Renews in 12 days</p>
-</div>
-<p class="font-semibold text-gray-900 dark:text-white">$12.99</p>
-</div>
-<div class="flex items-center gap-4">
-<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-700">
-<img alt="Adobe CC logo" class="h-6 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlEISa4zSQcoGu4F9GWyqqDddA173Zq6-CnCWG3Hg6NWIvansgJGtSTD53luJ9kYJ2oRqQ5jbHhrGAQWhlot1HfPotg9qq3g3bGJ3qo2sYMpBSmKs6ZJaWJOkwyZXx5GjYRnjt9ilkH9ED3ASYlAJ19ce4hEhcLqu22coB9hB6jSCRip9w8uuPUCDAn2grCrN-XGTB1-F8Lgsuccae1SsglHJTjPOffLtnJ_tj0GX8NSQRzLi3Vg4SSrn2KosJ6irgboW3v3P78sNq"/>
-</div>
-<div class="flex-1">
-<p class="font-medium text-gray-900 dark:text-white">Adobe CC</p>
-<p class="text-sm text-gray-500 dark:text-gray-400">Renews in 15 days</p>
-</div>
-<p class="font-semibold text-gray-900 dark:text-white">$54.99</p>
 </div>
 </div>
-<button class="mt-auto w-full rounded-lg border border-gray-200/10 py-2 text-sm font-semibold text-gray-900 dark:text-white hover:bg-white/5">View All Subscriptions</button>
+<div class="flex flex-col rounded-lg border border-border bg-card p-4 shadow-sm">
+<h3 class="text-base font-semibold text-foreground">Upcoming Renewals</h3>
+<div class="mt-3 flex flex-col gap-2">
+<div class="flex items-center gap-3 p-2 -mx-2 rounded-md hover:bg-muted/30 transition-colors cursor-pointer group">
+<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted group-hover:bg-muted/80 transition-colors">
+<img alt="Spotify logo" class="h-4 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIjbqgBbpD66pdzDo15sgPtU3-n1G1IWUciFSaM6TdN3yuog6bmsrzp64UuxMfZHSkm6CVZJd-2RL1sNmDuSspzqiFPP23_i2ZKUylgorSrZobkakD5oTC7Z5ujV2byNeHA7JU8EEa5n6WSiJko7dpXyOO_XuJkutAJUdVRc4qlu5plGq7pqouU99q0QC0hndOzoqSUrDObZcA_99ix7kk9jEqDyPrvACcZZZPiLAAj_YWxVmlR3ChTI9o5RvHkwh8KITmGd40j-G6"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="truncate text-sm font-medium text-foreground">Spotify</p>
+<p class="truncate text-xs text-muted-foreground">Renews tomorrow</p>
+</div>
+<p class="text-sm font-semibold text-foreground">$9.99</p>
+</div>
+<div class="flex items-center gap-3 p-2 -mx-2 rounded-md hover:bg-muted/30 transition-colors cursor-pointer group">
+<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted group-hover:bg-muted/80 transition-colors">
+<img alt="Netflix logo" class="h-3 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgrDpjUbUNENABDhEslpRcTaMMAkTi-jNXquXzTZuiQRYKnxQlQcD0pT2nE_zju-clRoYS8bljHSHl9dl8Cs1_XD-ahRNc8Rfq7_71pkL_ElN62w2Z14rYngcJbgxNxFED4u2pWdqp5kU2n028EMSk5goNeRH72MM0kAlYblFd241bDhquvEPE_JzWsqA2WGoTqDy1VUcZbXxQ1JYM0-eM8pIFTpgu3MrQfzCRKtacI6ocle0KSnW2a_s10JivRq5-bA8ttSpGmV3d"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="truncate text-sm font-medium text-foreground">Netflix</p>
+<p class="truncate text-xs text-muted-foreground">Renews in 3 days</p>
+</div>
+<p class="text-sm font-semibold text-foreground">$15.49</p>
+</div>
+<div class="flex items-center gap-3 p-2 -mx-2 rounded-md hover:bg-muted/30 transition-colors cursor-pointer group">
+<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted group-hover:bg-muted/80 transition-colors">
+<img alt="YouTube Music logo" class="h-4 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuABt0JcrcX2B3r3jKlAq4K9PTIxGuzelqF5O-oGV3YCAGOmokQ6GfZRukBbcBzxKqClszSEg91GzyDPF4Xf4cb-LVQo2sXVwJ1ck9Fbc8dAJS8C2CSMiWZq0hovulCUPPULIzLIyqGdY6iLOGjWdKNBulB-aRJ66Ft9M4rV3XYlspPusnmMWX6HXjnnqDZQ0Y7aPijjnvxBBK6LkKci_8M9E0plIKtwb_Qx2gackA8v0Cn-mg7jJdv64rGU6HYlqSOZcPrjw3D7vcaW"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="truncate text-sm font-medium text-foreground">Youtube Music</p>
+<p class="truncate text-xs text-muted-foreground">Renews in 12 days</p>
+</div>
+<p class="text-sm font-semibold text-foreground">$12.99</p>
+</div>
+<div class="flex items-center gap-3 p-2 -mx-2 rounded-md hover:bg-muted/30 transition-colors cursor-pointer group">
+<div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted group-hover:bg-muted/80 transition-colors">
+<img alt="Adobe CC logo" class="h-5 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlEISa4zSQcoGu4F9GWyqqDddA173Zq6-CnCWG3Hg6NWIvansgJGtSTD53luJ9kYJ2oRqQ5jbHhrGAQWhlot1HfPotg9qq3g3bGJ3qo2sYMpBSmKs6ZJaWJOkwyZXx5GjYRnjt9ilkH9ED3ASYlAJ19ce4hEhcLqu22coB9hB6jSCRip9w8uuPUCDAn2grCrN-XGTB1-F8Lgsuccae1SsglHJTjPOffLtnJ_tj0GX8NSQRzLi3Vg4SSrn2KosJ6irgboW3v3P78sNq"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="truncate text-sm font-medium text-foreground">Adobe CC</p>
+<p class="truncate text-xs text-muted-foreground">Renews in 15 days</p>
+</div>
+<p class="text-sm font-semibold text-foreground">$54.99</p>
+</div>
+</div>
+<button class="mt-auto h-9 w-full rounded-md border border-border bg-transparent py-2 text-sm font-semibold text-foreground hover:bg-muted/50 hover:text-primary transition-all mt-4">View All Subscriptions</button>
 </div>
 </div>
 </div>
 </div>
 </main>
 </div>
+<script>
+      lucide.createIcons();
+</script>
+
 </body></html>

@@ -1,4 +1,4 @@
-import type { CollectionConfig, Where } from 'payload'
+import type { CollectionConfig } from 'payload'
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
@@ -8,16 +8,8 @@ export const Categories: CollectionConfig = {
     defaultColumns: ['name', 'icon', 'color', 'isPublic', 'owner', 'createdAt'],
   },
   access: {
-    read: ({ req: { user } }) => {
-      if (!user) return false
-      // Can read public categories or own categories
-      return {
-        or: [
-          { isPublic: { equals: true } },
-          { owner: { equals: user.id } },
-        ],
-      } as Where
-    },
+    // Allow logged-in users to read all categories (public + own)
+    read: ({ req: { user } }) => Boolean(user),
     create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => {
       if (!user) return false

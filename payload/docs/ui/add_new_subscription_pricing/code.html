@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add New Subscription - Pricing</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        background: "#222831", // Deep dark blue/black
+                        foreground: "#EEEEEE", // Light text
+                        card: "#393E46", // Lighter container background
+                        "card-foreground": "#EEEEEE",
+                        popover: "#393E46",
+                        "popover-foreground": "#EEEEEE",
+                        primary: "#00ADB5", // Teal accent
+                        "primary-foreground": "#222831", // Dark text on teal for contrast
+                        secondary: "#222831",
+                        "secondary-foreground": "#EEEEEE",
+                        muted: "#222831", // Used for inactive backgrounds
+                        "muted-foreground": "#EEEEEE99", // Light text with opacity
+                        accent: "#222831", // Used for hover states
+                        "accent-foreground": "#00ADB5",
+                        destructive: "#ef4444",
+                        "destructive-foreground": "#EEEEEE",
+                        border: "#EEEEEE20", // Subtle light border
+                        input: "#222831", // Dark input background
+                        ring: "#00ADB5", // Focus ring color
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "calc(var(--radius) - 4px)",
+                        "sm": "calc(var(--radius) - 4px)",
+                        "md": "calc(var(--radius) - 2px)",
+                        "lg": "var(--radius)",
+                        "xl": "calc(var(--radius) + 4px)",
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+          :root {
+            --radius: 0.5rem;
+          }body {
+            @apply bg-background text-foreground;
+          }
+        }
+    </style>
+</head>
+<body class="bg-background font-display text-foreground selection:bg-primary selection:text-primary-foreground">
+<div class="relative flex min-h-screen w-full flex-col items-center justify-center p-4 group/design-root overflow-x-hidden">
+<div class="w-full max-w-4xl bg-card border border-border rounded-xl shadow-2xl overflow-hidden">
+<div class="flex flex-col md:flex-row h-full">
+<aside class="w-full md:w-64 p-4 pr-0 md:border-r border-border bg-card/50">
+<nav class="flex flex-row md:flex-col gap-1.5">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200" href="#">
+<i class="h-4 w-4" data-lucide="box"></i>
+<span class="hidden md:inline">Service</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-primary-foreground bg-primary shadow-md shadow-primary/20 transition-all duration-200" href="#">
+<i class="h-4 w-4" data-lucide="tag"></i>
+<span class="hidden md:inline">Pricing</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200" href="#">
+<i class="h-4 w-4" data-lucide="calendar"></i>
+<span class="hidden md:inline">Schedule</span>
+</a>
+<a class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200" href="#">
+<div class="flex items-center gap-3">
+<i class="h-4 w-4" data-lucide="file-text"></i>
+<span class="hidden md:inline">Details</span>
+</div>
+</a>
+<a class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200" href="#">
+<div class="flex items-center gap-3">
+<i class="h-4 w-4" data-lucide="bell"></i>
+<span class="hidden md:inline">Reminders</span>
+</div>
+</a>
+<a class="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200" href="#">
+<div class="flex items-center gap-3">
+<i class="h-4 w-4" data-lucide="users"></i>
+<span class="hidden md:inline">Sharing</span>
+</div>
+</a>
+</nav>
+</aside>
+<main class="flex-1 p-6 md:p-8">
+<div class="flex items-start justify-between mb-8">
+<div>
+<h1 class="text-foreground text-2xl font-bold tracking-tight">Add New Subscription</h1>
+<p class="text-muted-foreground text-sm mt-1.5">Set the pricing details for your new recurring payment.</p>
+</div>
+<button class="text-muted-foreground hover:text-primary transition-colors p-1 hover:bg-muted rounded-full">
+<i class="h-5 w-5" data-lucide="x"></i>
+</button>
+</div>
+<form>
+<div class="space-y-8">
+<div>
+<div class="flex items-center gap-2 mb-5 pb-2 border-b border-border">
+<i class="h-5 w-5 text-primary" data-lucide="credit-card"></i>
+<h2 class="text-foreground text-lg font-semibold">Pricing Configuration</h2>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div class="space-y-2.5">
+<label class="text-sm font-medium leading-none text-foreground/90" for="amount">Amount*</label>
+<div class="relative group">
+<input class="flex h-11 w-full rounded-md border border-border bg-input px-3 py-1 text-sm text-foreground shadow-sm transition-all placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent pl-9 group-hover:border-primary/50" id="amount" placeholder="15.99" step="0.01" type="number"/>
+<i class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" data-lucide="dollar-sign"></i>
+</div>
+</div>
+<div class="space-y-2.5">
+<label class="text-sm font-medium leading-none text-foreground/90" for="currency">Currency*</label>
+<div class="relative group">
+<select class="flex h-11 w-full items-center justify-between rounded-md border border-border bg-input px-3 py-1 text-sm text-foreground shadow-sm transition-all placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent appearance-none pl-3 group-hover:border-primary/50" id="currency">
+<option>USD - US Dollar</option>
+<option>EUR - Euro</option>
+<option>GBP - British Pound</option>
+</select>
+<i class="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none group-focus-within:text-primary transition-colors" data-lucide="chevron-down"></i>
+</div>
+</div>
+<div class="sm:col-span-2 space-y-2.5">
+<label class="text-sm font-medium leading-none text-foreground/90" for="billing-frequency">Billing Cycle*</label>
+<div class="grid grid-cols-3 gap-3">
+<div class="col-span-1 relative group">
+<input class="flex h-11 w-full rounded-md border border-border bg-input px-3 py-1 text-sm text-foreground shadow-sm transition-all placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent group-hover:border-primary/50" id="billing-frequency" placeholder="1" type="number" value="1"/>
+</div>
+<div class="relative col-span-2 group">
+<select class="flex h-11 w-full items-center justify-between rounded-md border border-border bg-input px-3 py-1 text-sm text-foreground shadow-sm transition-all placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent appearance-none group-hover:border-primary/50">
+<option>Month(s)</option>
+<option>Week(s)</option>
+<option>Day(s)</option>
+<option>Year(s)</option>
+</select>
+<i class="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none group-focus-within:text-primary transition-colors" data-lucide="chevron-down"></i>
+</div>
+</div>
+</div>
+<div class="space-y-2.5">
+<label class="text-sm font-medium leading-none text-foreground/90" for="promo-price">Promo Price <span class="text-muted-foreground text-xs font-normal ml-1">(Optional)</span></label>
+<div class="relative group">
+<input class="flex h-11 w-full rounded-md border border-border bg-input px-3 py-1 text-sm text-foreground shadow-sm transition-all placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent pl-9 group-hover:border-primary/50" id="promo-price" placeholder="e.g. 9.99" step="0.01" type="number"/>
+<i class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" data-lucide="percent"></i>
+</div>
+</div>
+<div class="space-y-2.5">
+<label class="text-sm font-medium leading-none text-foreground/90" for="promo-end-date">Promo End Date <span class="text-muted-foreground text-xs font-normal ml-1">(Optional)</span></label>
+<div class="relative group">
+<input class="flex h-11 w-full rounded-md border border-border bg-input px-3 py-1 text-sm text-foreground shadow-sm transition-all placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent pr-3 group-hover:border-primary/50 [color-scheme:dark]" id="promo-end-date" type="date"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+</form>
+<div class="flex justify-between gap-4 mt-10 pt-6 border-t border-border">
+<button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-border bg-transparent text-foreground hover:bg-muted hover:text-foreground h-10 px-6 py-2">
+                        Back
+                    </button>
+<button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-bold ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90 hover:shadow-primary/30 hover:-translate-y-0.5 h-10 px-8 py-2">
+                        Next Step
+                        <i class="ml-2 h-4 w-4" data-lucide="arrow-right"></i>
+</button>
+</div>
+</main>
+</div>
+</div>
+</div>
+<script>
+    lucide.createIcons();
+</script>
+
+</body></html>
