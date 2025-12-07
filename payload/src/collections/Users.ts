@@ -1,4 +1,34 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, CollectionAfterChangeHook } from 'payload'
+
+const createUserSettings: CollectionAfterChangeHook = async ({
+  doc,
+  req,
+  operation,
+}) => {
+  if (operation === 'create') {
+    try {
+      const existingSettings = await req.payload.find({
+        collection: 'user-settings',
+        where: { user: { equals: doc.id } },
+        limit: 1,
+        req,
+      })
+
+      if (existingSettings.totalDocs === 0) {
+        await req.payload.create({
+          collection: 'user-settings',
+          data: {
+            user: doc.id,
+          },
+          req,
+        })
+      }
+    } catch (error) {
+      console.error('Failed to create user settings:', error)
+    }
+  }
+  return doc
+}
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -8,6 +38,9 @@ export const Users: CollectionConfig = {
     defaultColumns: ['email', 'firstName', 'lastName', 'roles', 'createdAt'],
   },
   auth: true,
+  hooks: {
+    afterChange: [createUserSettings],
+  },
   fields: [
     {
       name: 'firstName',

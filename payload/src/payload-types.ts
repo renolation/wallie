@@ -68,6 +68,7 @@ export interface Config {
   blocks: {};
   collections: {
     users: User;
+    'user-settings': UserSetting;
     media: Media;
     categories: Category;
     subscriptions: Subscription;
@@ -82,6 +83,7 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
+    'user-settings': UserSettingsSelect<false> | UserSettingsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     subscriptions: SubscriptionsSelect<false> | SubscriptionsSelect<true>;
@@ -181,6 +183,136 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-settings".
+ */
+export interface UserSetting {
+  id: number;
+  /**
+   * The user this settings belongs to
+   */
+  user: number | User;
+  account?: {
+    /**
+     * Display name (overrides firstName lastName)
+     */
+    displayName?: string | null;
+    /**
+     * Short bio or description
+     */
+    bio?: string | null;
+    phoneNumber?: string | null;
+    /**
+     * Enable two-factor authentication
+     */
+    twoFactorEnabled?: boolean | null;
+  };
+  notifications?: {
+    /**
+     * Receive alerts before subscriptions are due
+     */
+    paymentReminders?: boolean | null;
+    /**
+     * Days before payment to send reminder
+     */
+    paymentReminderDays?: number | null;
+    /**
+     * Get notified when subscription prices change
+     */
+    priceChangeAlerts?: boolean | null;
+    /**
+     * Alert before free trials end
+     */
+    freeTrialEndingAlerts?: boolean | null;
+    /**
+     * Receive weekly spending summary
+     */
+    weeklySummary?: boolean | null;
+    /**
+     * Receive monthly spending report
+     */
+    monthlySummary?: boolean | null;
+    /**
+     * Stay updated with new features
+     */
+    newFeatures?: boolean | null;
+    /**
+     * Receive notifications via email
+     */
+    emailNotifications?: boolean | null;
+    /**
+     * Receive push notifications
+     */
+    pushNotifications?: boolean | null;
+  };
+  payments?: {
+    /**
+     * Default payment method ID (from payment provider)
+     */
+    defaultPaymentMethod?: string | null;
+    /**
+     * Saved payment methods
+     */
+    paymentMethods?:
+      | {
+          type: 'credit_card' | 'debit_card' | 'paypal' | 'bank_account' | 'apple_pay' | 'google_pay';
+          /**
+           * Display label (e.g., "Visa ending in 4242")
+           */
+          label: string;
+          /**
+           * Last 4 digits of card/account
+           */
+          lastFour?: string | null;
+          /**
+           * Expiry date (MM/YY)
+           */
+          expiryDate?: string | null;
+          isDefault?: boolean | null;
+          /**
+           * Payment provider token/ID
+           */
+          providerToken?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Get alerted when approaching budget limit
+     */
+    budgetAlerts?: boolean | null;
+    /**
+     * Percentage of budget to trigger alert
+     */
+    budgetAlertThreshold?: number | null;
+  };
+  general?: {
+    theme?: ('light' | 'dark' | 'system') | null;
+    language?: ('en' | 'es' | 'fr' | 'de' | 'pt' | 'ja' | 'ko' | 'zh-CN' | 'vi') | null;
+    dateFormat?: ('MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD') | null;
+    startOfWeek?: ('sunday' | 'monday') | null;
+    /**
+     * Use compact view for subscription lists
+     */
+    compactView?: boolean | null;
+    /**
+     * Show cancelled subscriptions in lists
+     */
+    showCancelledSubscriptions?: boolean | null;
+  };
+  privacy?: {
+    /**
+     * Allow household members to see your subscriptions
+     */
+    shareDataWithHousehold?: boolean | null;
+    /**
+     * Help improve the app by sharing anonymous usage data
+     */
+    analyticsEnabled?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -332,6 +464,10 @@ export interface PayloadLockedDocument {
         value: number | User;
       } | null)
     | ({
+        relationTo: 'user-settings';
+        value: number | UserSetting;
+      } | null)
+    | ({
         relationTo: 'media';
         value: number | Media;
       } | null)
@@ -425,6 +561,70 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-settings_select".
+ */
+export interface UserSettingsSelect<T extends boolean = true> {
+  user?: T;
+  account?:
+    | T
+    | {
+        displayName?: T;
+        bio?: T;
+        phoneNumber?: T;
+        twoFactorEnabled?: T;
+      };
+  notifications?:
+    | T
+    | {
+        paymentReminders?: T;
+        paymentReminderDays?: T;
+        priceChangeAlerts?: T;
+        freeTrialEndingAlerts?: T;
+        weeklySummary?: T;
+        monthlySummary?: T;
+        newFeatures?: T;
+        emailNotifications?: T;
+        pushNotifications?: T;
+      };
+  payments?:
+    | T
+    | {
+        defaultPaymentMethod?: T;
+        paymentMethods?:
+          | T
+          | {
+              type?: T;
+              label?: T;
+              lastFour?: T;
+              expiryDate?: T;
+              isDefault?: T;
+              providerToken?: T;
+              id?: T;
+            };
+        budgetAlerts?: T;
+        budgetAlertThreshold?: T;
+      };
+  general?:
+    | T
+    | {
+        theme?: T;
+        language?: T;
+        dateFormat?: T;
+        startOfWeek?: T;
+        compactView?: T;
+        showCancelledSubscriptions?: T;
+      };
+  privacy?:
+    | T
+    | {
+        shareDataWithHousehold?: T;
+        analyticsEnabled?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

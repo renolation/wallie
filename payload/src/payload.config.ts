@@ -14,6 +14,7 @@ import { Subscriptions } from './collections/Subscriptions'
 import { Households } from './collections/Households'
 import { Members } from './collections/Members'
 import { Notifications } from './collections/Notifications'
+import { UserSettings } from './collections/UserSettings'
 
 // Endpoints
 import { dashboardSummaryEndpoint } from './endpoints/dashboard-summary'
@@ -38,6 +39,7 @@ export default buildConfig({
   collections: [
     // Core
     Users,
+    UserSettings,
     Media,
     Categories,
     Subscriptions,

@@ -4,6 +4,7 @@ import React from 'react'
 import Sidebar from '../components/Sidebar'
 import { useAuth } from '../hooks/useAuth'
 import { Loader2 } from 'lucide-react'
+import { ToastProvider } from '@/components/ui/toast'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { loading } = useAuth(true)
@@ -17,11 +18,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar />
-      <main className="ml-64 flex-1 h-screen overflow-hidden">
-        {children}
-      </main>
-    </div>
+    <ToastProvider>
+      <div className="flex h-screen overflow-hidden bg-background">
+        <Sidebar />
+        <main className="ml-64 flex-1 h-screen overflow-hidden">
+          {children}
+        </main>
+      </div>
+    </ToastProvider>
   )
 }
