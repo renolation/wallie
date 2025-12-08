@@ -273,3 +273,190 @@ export const seedPopularServicesEndpoint: Endpoint = {
     }
   },
 }
+
+const DEFAULT_PLANS = [
+  {
+    name: 'Free',
+    slug: 'free',
+    description: 'Get started with basic subscription tracking',
+    price: 0,
+    currency: 'USD',
+    billingCycle: 'free',
+    isActive: true,
+    sortOrder: 1,
+    limits: {
+      maxSubscriptions: 5,
+      maxHouseholds: 1,
+      maxHouseholdMembers: 2,
+    },
+    features: {
+      advancedAnalytics: false,
+      aiAssistant: false,
+      smartNotifications: false,
+      emailAlerts: false,
+      pushAlerts: false,
+      discordAlerts: false,
+      priceAlerts: false,
+    },
+  },
+  {
+    name: 'Pro Monthly',
+    slug: 'pro-monthly',
+    description: 'Track unlimited subscriptions with advanced features',
+    price: 100, // $1.00
+    currency: 'USD',
+    billingCycle: 'monthly',
+    isActive: true,
+    sortOrder: 2,
+    limits: {
+      maxSubscriptions: -1, // unlimited
+      maxHouseholds: -1,
+      maxHouseholdMembers: -1,
+    },
+    features: {
+      advancedAnalytics: true,
+      aiAssistant: true,
+      smartNotifications: true,
+      emailAlerts: true,
+      pushAlerts: true,
+      discordAlerts: true,
+      priceAlerts: true,
+    },
+  },
+  {
+    name: 'Pro Yearly',
+    slug: 'pro-yearly',
+    description: 'Track unlimited subscriptions, billed yearly (save 17%)',
+    price: 1000, // $10.00/year
+    currency: 'USD',
+    billingCycle: 'yearly',
+    isActive: true,
+    sortOrder: 3,
+    limits: {
+      maxSubscriptions: -1,
+      maxHouseholds: -1,
+      maxHouseholdMembers: -1,
+    },
+    features: {
+      advancedAnalytics: true,
+      aiAssistant: true,
+      smartNotifications: true,
+      emailAlerts: true,
+      pushAlerts: true,
+      discordAlerts: true,
+      priceAlerts: true,
+    },
+  },
+  {
+    name: 'Lifetime',
+    slug: 'lifetime',
+    description: 'One-time payment, lifetime access to all Pro features',
+    price: 1500, // $15.00
+    currency: 'USD',
+    billingCycle: 'lifetime',
+    isActive: true,
+    sortOrder: 4,
+    limits: {
+      maxSubscriptions: -1,
+      maxHouseholds: -1,
+      maxHouseholdMembers: -1,
+    },
+    features: {
+      advancedAnalytics: true,
+      aiAssistant: true,
+      smartNotifications: true,
+      emailAlerts: true,
+      pushAlerts: true,
+      discordAlerts: true,
+      priceAlerts: true,
+    },
+  },
+]
+
+/**
+ * Seed Plans Endpoint
+ * POST /api/seed/plans
+ * POST /api/seed/plans?reset=true (deletes all first, then seeds)
+ *
+ * Seeds default subscription plans. Only accessible by admin users.
+ */
+export const seedPlansEndpoint: Endpoint = {
+  path: '/seed/plans',
+  method: 'post',
+  handler: async (req) => {
+    if (!req.user || !req.user.roles?.includes('admin')) {
+      return Response.json({ error: 'Unauthorized - Admin only' }, { status: 401 })
+    }
+
+    try {
+      const url = new URL(req.url || '', 'http://localhost')
+      const reset = url.searchParams.get('reset') === 'true'
+
+      // If reset, delete all existing plans first
+      if (reset) {
+        const existing = await req.payload.find({
+          collection: 'plans',
+          limit: 100,
+        })
+        for (const plan of existing.docs) {
+          await req.payload.delete({
+            collection: 'plans',
+            id: plan.id,
+          })
+        }
+      }
+
+      const results = {
+        deleted: reset ? 'all' : 'none',
+        created: [] as string[],
+        skipped: [] as string[],
+        errors: [] as string[],
+      }
+
+      for (const plan of DEFAULT_PLANS) {
+        // Check if plan already exists
+        const existing = await req.payload.find({
+          collection: 'plans',
+          where: {
+            slug: { equals: plan.slug },
+          },
+          limit: 1,
+        })
+
+        if (existing.totalDocs > 0) {
+          results.skipped.push(plan.name)
+          continue
+        }
+
+        try {
+          await req.payload.create({
+            collection: 'plans',
+            data: plan,
+          })
+          results.created.push(plan.name)
+        } catch (err) {
+          results.errors.push(`${plan.name}: ${err instanceof Error ? err.message : 'Unknown error'}`)
+        }
+      }
+
+      return Response.json({
+        success: true,
+        results,
+        summary: {
+          created: results.created.length,
+          skipped: results.skipped.length,
+          errors: results.errors.length,
+        },
+      })
+    } catch (error) {
+      console.error('Seed plans error:', error)
+      return Response.json(
+        {
+          error: 'Seed failed',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+        { status: 500 },
+      )
+    }
+  },
+}

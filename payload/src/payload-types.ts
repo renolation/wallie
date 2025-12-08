@@ -76,6 +76,8 @@ export interface Config {
     members: Member;
     notifications: Notification;
     'popular-services': PopularService;
+    plans: Plan;
+    'user-plans': UserPlan;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -92,6 +94,8 @@ export interface Config {
     members: MembersSelect<false> | MembersSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     'popular-services': PopularServicesSelect<false> | PopularServicesSelect<true>;
+    plans: PlansSelect<false> | PlansSelect<true>;
+    'user-plans': UserPlansSelect<false> | UserPlansSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -473,6 +477,119 @@ export interface PopularService {
   createdAt: string;
 }
 /**
+ * Subscription plans available for users
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plans".
+ */
+export interface Plan {
+  id: number;
+  name: string;
+  /**
+   * Unique identifier: free, pro, lifetime
+   */
+  slug: string;
+  description?: string | null;
+  /**
+   * Price in cents (e.g., 999 = $9.99)
+   */
+  price: number;
+  currency?: string | null;
+  billingCycle: 'free' | 'monthly' | 'yearly' | 'lifetime';
+  /**
+   * Whether this plan is available for purchase
+   */
+  isActive?: boolean | null;
+  /**
+   * Display order (lower = first)
+   */
+  sortOrder?: number | null;
+  /**
+   * Usage limits for this plan
+   */
+  limits?: {
+    /**
+     * Maximum number of subscriptions (-1 = unlimited)
+     */
+    maxSubscriptions?: number | null;
+    /**
+     * Maximum number of households (-1 = unlimited)
+     */
+    maxHouseholds?: number | null;
+    /**
+     * Maximum members per household (-1 = unlimited)
+     */
+    maxHouseholdMembers?: number | null;
+  };
+  /**
+   * Features enabled for this plan
+   */
+  features?: {
+    advancedAnalytics?: boolean | null;
+    aiAssistant?: boolean | null;
+    smartNotifications?: boolean | null;
+    emailAlerts?: boolean | null;
+    pushAlerts?: boolean | null;
+    discordAlerts?: boolean | null;
+    priceAlerts?: boolean | null;
+  };
+  /**
+   * Stripe Product ID
+   */
+  stripeProductId?: string | null;
+  /**
+   * Stripe Price ID
+   */
+  stripePriceId?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * User subscription records
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-plans".
+ */
+export interface UserPlan {
+  id: number;
+  user: number | User;
+  plan: number | Plan;
+  status: 'active' | 'cancelled' | 'expired' | 'past_due' | 'trialing';
+  startDate: string;
+  /**
+   * Null for lifetime plans
+   */
+  expiresAt?: string | null;
+  cancelledAt?: string | null;
+  /**
+   * Trial period end date
+   */
+  trialEndsAt?: string | null;
+  paymentProvider?: ('stripe' | 'apple' | 'google' | 'manual') | null;
+  /**
+   * Subscription ID from payment provider
+   */
+  externalSubscriptionId?: string | null;
+  /**
+   * Customer ID from payment provider
+   */
+  externalCustomerId?: string | null;
+  /**
+   * Additional data from payment provider
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -531,6 +648,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'popular-services';
         value: number | PopularService;
+      } | null)
+    | ({
+        relationTo: 'plans';
+        value: number | Plan;
+      } | null)
+    | ({
+        relationTo: 'user-plans';
+        value: number | UserPlan;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -787,6 +912,61 @@ export interface PopularServicesSelect<T extends boolean = true> {
   defaultCategory?: T;
   suggestedPrice?: T;
   suggestedBillingCycle?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plans_select".
+ */
+export interface PlansSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
+  price?: T;
+  currency?: T;
+  billingCycle?: T;
+  isActive?: T;
+  sortOrder?: T;
+  limits?:
+    | T
+    | {
+        maxSubscriptions?: T;
+        maxHouseholds?: T;
+        maxHouseholdMembers?: T;
+      };
+  features?:
+    | T
+    | {
+        advancedAnalytics?: T;
+        aiAssistant?: T;
+        smartNotifications?: T;
+        emailAlerts?: T;
+        pushAlerts?: T;
+        discordAlerts?: T;
+        priceAlerts?: T;
+      };
+  stripeProductId?: T;
+  stripePriceId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-plans_select".
+ */
+export interface UserPlansSelect<T extends boolean = true> {
+  user?: T;
+  plan?: T;
+  status?: T;
+  startDate?: T;
+  expiresAt?: T;
+  cancelledAt?: T;
+  trialEndsAt?: T;
+  paymentProvider?: T;
+  externalSubscriptionId?: T;
+  externalCustomerId?: T;
+  metadata?: T;
   updatedAt?: T;
   createdAt?: T;
 }

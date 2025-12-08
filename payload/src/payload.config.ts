@@ -16,11 +16,13 @@ import { Members } from './collections/Members'
 import { Notifications } from './collections/Notifications'
 import { UserSettings } from './collections/UserSettings'
 import { PopularServices } from './collections/PopularServices'
+import { Plans } from './collections/Plans'
+import { UserPlans } from './collections/UserPlans'
 
 // Endpoints
 import { dashboardSummaryEndpoint } from './endpoints/dashboard-summary'
 import { runNotificationJobsEndpoint } from './endpoints/run-jobs'
-import { seedCategoriesEndpoint, seedPopularServicesEndpoint } from './endpoints/seed'
+import { seedCategoriesEndpoint, seedPopularServicesEndpoint, seedPlansEndpoint } from './endpoints/seed'
 import { exportDataEndpoint } from './endpoints/export'
 import { registerEndpoint } from './endpoints/auth'
 
@@ -49,6 +51,9 @@ export default buildConfig({
     Notifications,
     // Reference Data
     PopularServices,
+    // Billing
+    Plans,
+    UserPlans,
   ],
   endpoints: [
     // Auth
@@ -60,6 +65,7 @@ export default buildConfig({
     // Seed data
     seedCategoriesEndpoint,
     seedPopularServicesEndpoint,
+    seedPlansEndpoint,
     // User data export
     exportDataEndpoint,
   ],

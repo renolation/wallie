@@ -3,6 +3,9 @@ import config from '@payload-config'
 import { cookies } from 'next/headers'
 import DashboardClient from './client'
 
+// Prevent static generation - this page needs runtime data
+export const dynamic = 'force-dynamic'
+
 interface CategoryData {
   amount: number
   count: number
