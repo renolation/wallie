@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useCallback, useEffect } from 'react'
-import { X, Plus, Trash2, Upload, ChevronDown, ArrowRight, ArrowLeft, DollarSign, Percent, Layers, Tag, CalendarDays, FileText, Bell, Users, RefreshCw, Info } from 'lucide-react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
+import { X, Plus, Trash2, Upload, ChevronDown, ArrowRight, ArrowLeft, DollarSign, Percent, Layers, Tag, CalendarDays, FileText, Bell, Users, RefreshCw, Info, Search, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,6 +13,17 @@ import { cn } from '@/lib/utils'
 interface Category {
   id: number
   name: string
+}
+
+interface PopularService {
+  id: number
+  name: string
+  description?: string
+  logo?: string
+  altText?: string
+  defaultCategory?: number | { id: number }
+  suggestedPrice?: number
+  suggestedBillingCycle?: 'weekly' | 'monthly' | 'yearly'
 }
 
 interface MemberShare {
@@ -108,6 +119,11 @@ interface AddSubscriptionModalProps {
 export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: AddSubscriptionModalProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [categories, setCategories] = useState<Category[]>([])
+  const [popularServices, setPopularServices] = useState<PopularService[]>([])
+  const [serviceSearch, setServiceSearch] = useState('')
+  const [showServiceDropdown, setShowServiceDropdown] = useState(false)
+  const [selectedService, setSelectedService] = useState<PopularService | null>(null)
+  const serviceSearchRef = useRef<HTMLDivElement>(null)
   const [submitting, setSubmitting] = useState(false)
   const [logoPreview, setLogoPreview] = useState('')
   const [logoError, setLogoError] = useState(false)
@@ -123,8 +139,22 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: Add
   })
 
   useEffect(() => {
-    if (isOpen) fetchCategories()
+    if (isOpen) {
+      fetchCategories()
+      fetchPopularServices()
+    }
   }, [isOpen])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (serviceSearchRef.current && !serviceSearchRef.current.contains(event.target as Node)) {
+        setShowServiceDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const fetchCategories = async () => {
     try {
@@ -137,6 +167,49 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: Add
       console.error('Failed to fetch categories:', err)
     }
   }
+
+  const fetchPopularServices = async () => {
+    try {
+      const res = await fetch('/api/popular-services?limit=100&sort=position', { credentials: 'include' })
+      if (res.ok) {
+        const data = await res.json()
+        setPopularServices(data.docs || [])
+      }
+    } catch (err) {
+      console.error('Failed to fetch popular services:', err)
+    }
+  }
+
+  const handleSelectService = (service: PopularService) => {
+    setSelectedService(service)
+    setServiceSearch(service.name)
+    setShowServiceDropdown(false)
+
+    // Prefill form data
+    const categoryId = typeof service.defaultCategory === 'object'
+      ? service.defaultCategory?.id
+      : service.defaultCategory
+
+    setForm(prev => ({
+      ...prev,
+      name: service.name,
+      description: service.description || '',
+      logo: service.logo || '',
+      category: categoryId ? String(categoryId) : prev.category,
+      billingCycleUnit: service.suggestedBillingCycle || prev.billingCycleUnit,
+      amount: service.suggestedPrice ? String(service.suggestedPrice / 100) : prev.amount,
+    }))
+
+    // Set logo preview
+    if (service.logo) {
+      setLogoPreview(service.logo)
+      setLogoError(false)
+    }
+  }
+
+  const filteredServices = popularServices.filter(service =>
+    service.name.toLowerCase().includes(serviceSearch.toLowerCase())
+  )
 
   const handleFetchLogo = useCallback(() => {
     let domain: string | null = null
@@ -163,6 +236,9 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: Add
     setCurrentStep(0)
     setLogoPreview('')
     setLogoError(false)
+    setServiceSearch('')
+    setSelectedService(null)
+    setShowServiceDropdown(false)
   }
 
   const handleClose = () => { resetForm(); onClose() }
@@ -294,7 +370,87 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: Add
               {/* Step 1: Service */}
               {currentStepData.id === 'service' && (
                 <div className="space-y-4">
-                  <h3 className="text-base font-semibold">Service</h3>
+                  {/* Popular Service Search */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-primary" />
+                      <Label>Quick Add from Popular Services</Label>
+                    </div>
+                    <div ref={serviceSearchRef} className="relative">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          type="text"
+                          placeholder="Search Netflix, Spotify, Adobe..."
+                          value={serviceSearch}
+                          onChange={(e) => {
+                            setServiceSearch(e.target.value)
+                            setShowServiceDropdown(true)
+                            if (selectedService && e.target.value !== selectedService.name) {
+                              setSelectedService(null)
+                            }
+                          }}
+                          onFocus={() => setShowServiceDropdown(true)}
+                          className="pl-9"
+                        />
+                      </div>
+                      {showServiceDropdown && (
+                        <div className="absolute z-50 w-full mt-1 max-h-64 overflow-y-auto bg-card border border-border rounded-lg shadow-lg">
+                          {filteredServices.length > 0 ? (
+                            filteredServices.map((service) => (
+                              <button
+                                key={service.id}
+                                type="button"
+                                onClick={() => handleSelectService(service)}
+                                className="w-full flex items-center gap-3 px-3 py-2 hover:bg-accent text-left transition-colors"
+                              >
+                                {service.logo ? (
+                                  <img
+                                    src={service.logo}
+                                    alt={service.altText || service.name}
+                                    className="w-8 h-8 rounded object-contain bg-muted p-1"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).style.display = 'none'
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-8 h-8 rounded bg-muted flex items-center justify-center text-xs font-bold">
+                                    {service.name.charAt(0)}
+                                  </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium truncate">{service.name}</p>
+                                  {service.description && (
+                                    <p className="text-xs text-muted-foreground truncate">{service.description}</p>
+                                  )}
+                                </div>
+                              </button>
+                            ))
+                          ) : serviceSearch.trim() ? (
+                            <div className="px-3 py-4 text-center text-sm text-muted-foreground">
+                              No services found. You can add a custom service below.
+                            </div>
+                          ) : (
+                            <div className="px-3 py-2 text-xs text-muted-foreground">
+                              Type to search popular services...
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">Select a service to auto-fill details, or enter manually below</p>
+                  </div>
+
+                  <div className="relative py-2">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-border" />
+                    </div>
+                    <div className="relative flex justify-center">
+                      <span className="bg-background px-2 text-xs text-muted-foreground">or enter manually</span>
+                    </div>
+                  </div>
+
+                  <h3 className="text-base font-semibold">Service Details</h3>
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label>Name*</Label>

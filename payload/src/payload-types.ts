@@ -75,6 +75,7 @@ export interface Config {
     households: Household;
     members: Member;
     notifications: Notification;
+    'popular-services': PopularService;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -90,6 +91,7 @@ export interface Config {
     households: HouseholdsSelect<false> | HouseholdsSelect<true>;
     members: MembersSelect<false> | MembersSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
+    'popular-services': PopularServicesSelect<false> | PopularServicesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -437,6 +439,41 @@ export interface Notification {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "popular-services".
+ */
+export interface PopularService {
+  id: number;
+  /**
+   * Display order (lower = higher priority)
+   */
+  position: number;
+  name: string;
+  description?: string | null;
+  /**
+   * URL to service logo
+   */
+  logo?: string | null;
+  /**
+   * Alt text for the logo
+   */
+  altText?: string | null;
+  /**
+   * Default category to assign when selecting this service
+   */
+  defaultCategory?: (number | null) | Category;
+  /**
+   * Suggested price in cents (optional)
+   */
+  suggestedPrice?: number | null;
+  /**
+   * Suggested billing cycle (optional)
+   */
+  suggestedBillingCycle?: ('weekly' | 'monthly' | 'yearly') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -490,6 +527,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'notifications';
         value: number | Notification;
+      } | null)
+    | ({
+        relationTo: 'popular-services';
+        value: number | PopularService;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -730,6 +771,22 @@ export interface NotificationsSelect<T extends boolean = true> {
   sent?: T;
   method?: T;
   message?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "popular-services_select".
+ */
+export interface PopularServicesSelect<T extends boolean = true> {
+  position?: T;
+  name?: T;
+  description?: T;
+  logo?: T;
+  altText?: T;
+  defaultCategory?: T;
+  suggestedPrice?: T;
+  suggestedBillingCycle?: T;
   updatedAt?: T;
   createdAt?: T;
 }
