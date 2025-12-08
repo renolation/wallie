@@ -53,7 +53,7 @@ export const registerEndpoint: Endpoint = {
         )
       }
 
-      // Create user
+      // Create user (override access since this is public registration)
       const user = await req.payload.create({
         collection: 'users',
         data: {
@@ -62,6 +62,7 @@ export const registerEndpoint: Endpoint = {
           firstName: body.name || '',
           roles: ['user'], // Always create as regular user
         },
+        overrideAccess: true,
       })
 
       // Auto-login: generate token
@@ -73,16 +74,29 @@ export const registerEndpoint: Endpoint = {
         },
       })
 
-      return Response.json({
-        message: 'Registration successful',
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.firstName,
+      // Set the cookie like Payload's login does
+      const cookieExpires = new Date(loginResult.exp! * 1000)
+      const cookie = `payload-token=${loginResult.token}; Path=/; HttpOnly; SameSite=Lax; Expires=${cookieExpires.toUTCString()}`
+
+      return new Response(
+        JSON.stringify({
+          message: 'Registration successful',
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.firstName,
+          },
+          token: loginResult.token,
+          exp: loginResult.exp,
+        }),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Set-Cookie': cookie,
+          },
         },
-        token: loginResult.token,
-        exp: loginResult.exp,
-      })
+      )
     } catch (error) {
       console.error('Registration error:', error)
       return Response.json(

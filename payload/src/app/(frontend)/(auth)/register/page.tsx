@@ -34,40 +34,25 @@ export default function RegisterPage() {
     setLoading(true)
 
     try {
-      const nameParts = fullName.trim().split(' ')
-      const firstName = nameParts[0] || ''
-      const lastName = nameParts.slice(1).join(' ') || ''
-
-      const res = await fetch('/api/users', {
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           email,
           password,
-          firstName,
-          lastName,
+          name: fullName.trim(),
         }),
       })
 
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.errors?.[0]?.message || 'Registration failed')
+        throw new Error(data.error || 'Registration failed')
       }
 
-      const loginRes = await fetch('/api/users/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      })
-
-      if (loginRes.ok) {
-        router.push('/dashboard')
-      } else {
-        router.push('/login')
-      }
+      // Registration includes auto-login, redirect to dashboard
+      router.push('/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed')
     } finally {
