@@ -25,7 +25,14 @@ import { runNotificationJobsEndpoint } from './endpoints/run-jobs'
 import { seedCategoriesEndpoint, seedPopularServicesEndpoint, seedPlansEndpoint } from './endpoints/seed'
 import { exportDataEndpoint } from './endpoints/export'
 import { registerEndpoint } from './endpoints/auth'
-import { polarCheckoutEndpoint, polarWebhookEndpoint, polarPortalEndpoint } from './endpoints/polar'
+import {
+  polarCheckoutEndpoint,
+  polarWebhookEndpoint,
+  polarPortalEndpoint,
+  polarUpgradePreviewEndpoint,
+  polarUpgradeEndpoint,
+  polarCancelEndpoint,
+} from './endpoints/polar'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -73,6 +80,9 @@ export default buildConfig({
     polarCheckoutEndpoint,
     polarWebhookEndpoint,
     polarPortalEndpoint,
+    polarUpgradePreviewEndpoint,
+    polarUpgradeEndpoint,
+    polarCancelEndpoint,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

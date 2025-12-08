@@ -65,6 +65,19 @@ export default function SettingsClient({ initialUser, initialSettings, currentPl
     expiryDate: '',
   })
 
+  // Upgrade preview dialog state
+  const [showUpgradePreview, setShowUpgradePreview] = useState(false)
+  const [loadingPreview, setLoadingPreview] = useState(false)
+  const [upgradePreview, setUpgradePreview] = useState<{
+    canUpgrade: boolean
+    upgradeType: 'new_subscription' | 'plan_change' | 'immediate_charge'
+    currentPlan: { name: string; price: number; billingCycle: string; daysRemaining: number } | null
+    targetPlan: { name: string; price: number; billingCycle: string }
+    proration: { credit: number; amountDue: number; daysRemaining: number; isEstimate?: boolean }
+    message: string
+  } | null>(null)
+  const [selectedUpgradePlan, setSelectedUpgradePlan] = useState<Plan | null>(null)
+
   const handleSaveAccount = async () => {
     setSaving(true)
     try {
@@ -328,28 +341,125 @@ export default function SettingsClient({ initialUser, initialSettings, currentPl
   }
 
   // Billing functions
-  const handleUpgradePlan = async (planSlug: string) => {
-    setUpgradingPlan(planSlug)
+  const handleUpgradePlan = async (plan: Plan) => {
+    // For free users or users without proration, go directly to checkout
+    if (!currentPlan || currentPlan.billingCycle === 'free') {
+      setUpgradingPlan(plan.slug)
+      try {
+        const res = await fetch('/api/polar/upgrade', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ targetPlanSlug: plan.slug }),
+        })
+
+        const data = await res.json()
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to create checkout')
+        }
+
+        if (data.checkoutUrl) {
+          window.location.href = data.checkoutUrl
+        } else if (data.action === 'subscription_updated') {
+          addToast(data.message, 'success')
+          window.location.reload()
+        }
+      } catch (error) {
+        console.error('Upgrade error:', error)
+        addToast(error instanceof Error ? error.message : 'Failed to start upgrade', 'error')
+        setUpgradingPlan(null)
+      }
+      return
+    }
+
+    // For paid users, show proration preview first
+    setSelectedUpgradePlan(plan)
+    setLoadingPreview(true)
+    setShowUpgradePreview(true)
+
     try {
-      const res = await fetch('/api/polar/checkout', {
+      const res = await fetch('/api/polar/upgrade-preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ planSlug }),
+        body: JSON.stringify({ targetPlanSlug: plan.slug }),
       })
 
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to create checkout')
+        throw new Error(data.error || 'Failed to get upgrade preview')
       }
 
-      // Redirect to Polar checkout
-      window.location.href = data.checkoutUrl
+      setUpgradePreview(data)
+    } catch (error) {
+      console.error('Preview error:', error)
+      addToast(error instanceof Error ? error.message : 'Failed to get upgrade preview', 'error')
+      setShowUpgradePreview(false)
+    } finally {
+      setLoadingPreview(false)
+    }
+  }
+
+  const handleConfirmUpgrade = async () => {
+    if (!selectedUpgradePlan) return
+
+    setUpgradingPlan(selectedUpgradePlan.slug)
+    setShowUpgradePreview(false)
+
+    try {
+      const res = await fetch('/api/polar/upgrade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ targetPlanSlug: selectedUpgradePlan.slug }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to process upgrade')
+      }
+
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl
+      } else if (data.action === 'subscription_updated') {
+        addToast(data.message, 'success')
+        window.location.reload()
+      }
     } catch (error) {
       console.error('Upgrade error:', error)
-      addToast(error instanceof Error ? error.message : 'Failed to start upgrade', 'error')
+      addToast(error instanceof Error ? error.message : 'Failed to process upgrade', 'error')
       setUpgradingPlan(null)
+    }
+  }
+
+  const handleCancelSubscription = async () => {
+    if (!confirm('Are you sure you want to cancel your subscription? You will retain access until the end of your billing period.')) {
+      return
+    }
+
+    setSaving(true)
+    try {
+      const res = await fetch('/api/polar/cancel', {
+        method: 'POST',
+        credentials: 'include',
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to cancel subscription')
+      }
+
+      addToast(data.message, 'success')
+      window.location.reload()
+    } catch (error) {
+      console.error('Cancel error:', error)
+      addToast(error instanceof Error ? error.message : 'Failed to cancel subscription', 'error')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -566,9 +676,14 @@ export default function SettingsClient({ initialUser, initialSettings, currentPl
                       </div>
                     </div>
                     {userPlan?.paymentProvider === 'polar' && currentPlan?.billingCycle !== 'lifetime' && currentPlan?.billingCycle !== 'free' && (
-                      <Button variant="outline" size="sm" onClick={handleManageSubscription}>
-                        Manage Subscription
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={handleManageSubscription}>
+                          Manage
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={handleCancelSubscription} disabled={saving}>
+                          Cancel
+                        </Button>
+                      </div>
                     )}
                   </div>
 
@@ -671,7 +786,7 @@ export default function SettingsClient({ initialUser, initialSettings, currentPl
                                   className="w-full mt-4"
                                   variant={plan.slug === 'lifetime' ? 'default' : 'outline'}
                                   disabled={isCurrentPlan || upgradingPlan === plan.slug}
-                                  onClick={() => handleUpgradePlan(plan.slug)}
+                                  onClick={() => handleUpgradePlan(plan)}
                                 >
                                   {upgradingPlan === plan.slug ? (
                                     <>
@@ -746,7 +861,7 @@ export default function SettingsClient({ initialUser, initialSettings, currentPl
                             </p>
                           </div>
                           <Button
-                            onClick={() => handleUpgradePlan(plan.slug)}
+                            onClick={() => handleUpgradePlan(plan)}
                             disabled={upgradingPlan === plan.slug}
                             className="bg-yellow-500 hover:bg-yellow-600 text-yellow-950"
                           >
@@ -1209,6 +1324,135 @@ export default function SettingsClient({ initialUser, initialSettings, currentPl
             </Button>
             <Button onClick={handleAddPaymentMethod} disabled={saving}>
               {saving ? 'Adding...' : 'Add Payment Method'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Upgrade Preview Dialog */}
+      <Dialog open={showUpgradePreview} onOpenChange={(open) => {
+        setShowUpgradePreview(open)
+        if (!open) {
+          setUpgradePreview(null)
+          setSelectedUpgradePlan(null)
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Plan Change</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 px-4">
+            {loadingPreview ? (
+              <div className="flex flex-col items-center justify-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
+                <p className="text-muted-foreground">Calculating your upgrade cost...</p>
+              </div>
+            ) : upgradePreview ? (
+              <div className="space-y-6">
+                {/* Plan Change Summary */}
+                <div className="flex items-center justify-between gap-4">
+                  <div className="text-center flex-1">
+                    <p className="text-sm text-muted-foreground mb-1">Current Plan</p>
+                    <p className="font-bold">{upgradePreview.currentPlan?.name || 'Free'}</p>
+                    {upgradePreview.currentPlan && (
+                      <p className="text-sm text-muted-foreground">
+                        ${(upgradePreview.currentPlan.price / 100).toFixed(2)}/{upgradePreview.currentPlan.billingCycle === 'monthly' ? 'mo' : 'yr'}
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-2xl text-muted-foreground">→</div>
+                  <div className="text-center flex-1">
+                    <p className="text-sm text-muted-foreground mb-1">New Plan</p>
+                    <p className="font-bold text-primary">{upgradePreview.targetPlan.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      ${(upgradePreview.targetPlan.price / 100).toFixed(2)}
+                      {upgradePreview.targetPlan.billingCycle === 'monthly' && '/mo'}
+                      {upgradePreview.targetPlan.billingCycle === 'yearly' && '/yr'}
+                      {upgradePreview.targetPlan.billingCycle === 'lifetime' && ' one-time'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Proration Details - Only show for plan changes with proration */}
+                {upgradePreview.upgradeType === 'plan_change' && upgradePreview.proration.credit > 0 && (
+                  <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                    <h4 className="font-medium text-sm flex items-center gap-2">
+                      Proration Details
+                      {upgradePreview.proration.isEstimate && (
+                        <Badge variant="secondary" className="text-xs">Estimate</Badge>
+                      )}
+                    </h4>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Days remaining on current plan</span>
+                      <span>{upgradePreview.proration.daysRemaining} days</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Credit from unused time</span>
+                      <span className="text-green-600">~${(upgradePreview.proration.credit / 100).toFixed(2)}</span>
+                    </div>
+                    <Separator className="my-2" />
+                    <div className="flex justify-between font-medium">
+                      <span>Estimated amount due</span>
+                      <span className="text-lg">~${(upgradePreview.proration.amountDue / 100).toFixed(2)}</span>
+                    </div>
+                    {upgradePreview.proration.isEstimate && (
+                      <p className="text-xs text-muted-foreground">
+                        * Final amount calculated by Polar at checkout
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Lifetime purchase - Full price, no proration */}
+                {upgradePreview.upgradeType === 'immediate_charge' && (
+                  <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                    <div className="flex justify-between font-medium">
+                      <span>Amount due today</span>
+                      <span className="text-lg">${(upgradePreview.proration.amountDue / 100).toFixed(2)}</span>
+                    </div>
+                    {upgradePreview.currentPlan && (
+                      <p className="text-xs text-muted-foreground">
+                        Your current {upgradePreview.currentPlan.name} subscription will be cancelled.
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* New subscription - Full price */}
+                {upgradePreview.upgradeType === 'new_subscription' && (
+                  <div className="bg-muted/50 rounded-lg p-4">
+                    <div className="flex justify-between font-medium">
+                      <span>Amount due today</span>
+                      <span className="text-lg">${(upgradePreview.proration.amountDue / 100).toFixed(2)}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Info message */}
+                <p className="text-sm text-muted-foreground text-center">
+                  {upgradePreview.message}
+                </p>
+              </div>
+            ) : (
+              <p className="text-center text-muted-foreground">Unable to load upgrade preview.</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowUpgradePreview(false)} disabled={upgradingPlan !== null}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmUpgrade}
+              disabled={loadingPreview || !upgradePreview || upgradingPlan !== null}
+            >
+              {upgradingPlan ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                `Confirm ${upgradePreview?.targetPlan.billingCycle === 'lifetime' ? 'Purchase' : 'Upgrade'}`
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
