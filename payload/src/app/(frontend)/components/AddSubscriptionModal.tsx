@@ -118,6 +118,7 @@ interface AddSubscriptionModalProps {
 
 export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: AddSubscriptionModalProps) {
   const [currentStep, setCurrentStep] = useState(0)
+  const [highestStepReached, setHighestStepReached] = useState(0)
   const [categories, setCategories] = useState<Category[]>([])
   const [popularServices, setPopularServices] = useState<PopularService[]>([])
   const [serviceSearch, setServiceSearch] = useState('')
@@ -234,6 +235,7 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: Add
       enableRenewalReminder: true, enableRefundReminder: true, enableContractExpiry: false,
     })
     setCurrentStep(0)
+    setHighestStepReached(0)
     setLogoPreview('')
     setLogoError(false)
     setServiceSearch('')
@@ -242,14 +244,20 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: Add
   }
 
   const handleClose = () => { resetForm(); onClose() }
-  const handleNext = () => { if (currentStep < STEPS.length - 1) setCurrentStep(currentStep + 1) }
+  const handleNext = () => {
+    if (currentStep < STEPS.length - 1) {
+      const nextStep = currentStep + 1
+      setCurrentStep(nextStep)
+      setHighestStepReached(prev => Math.max(prev, nextStep))
+    }
+  }
   const handleBack = () => { if (currentStep > 0) setCurrentStep(currentStep - 1) }
 
   const canProceed = () => {
     switch (STEPS[currentStep].id) {
       case 'service': return form.name.trim() !== ''
       case 'pricing': return form.amount !== '' && parseFloat(form.amount) > 0
-      case 'schedule': return form.startDate !== ''
+      case 'schedule': return form.startDate !== '' && form.nextBillingDate !== ''
       default: return true
     }
   }
@@ -309,7 +317,6 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: Add
 
   const currentStepData = STEPS[currentStep]
   const isLastStep = currentStep === STEPS.length - 1
-  const isOptionalStep = !currentStepData.required
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -325,15 +332,15 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: Add
               {STEPS.map((step, index) => {
                 const Icon = step.icon
                 const isActive = index === currentStep
-                const isCompleted = index < currentStep
+                const isVisited = index <= highestStepReached
                 return (
                   <button
                     key={step.id}
-                    onClick={() => index <= currentStep && setCurrentStep(index)}
-                    disabled={index > currentStep}
+                    onClick={() => isVisited && setCurrentStep(index)}
+                    disabled={!isVisited}
                     className={cn(
                       'flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors whitespace-nowrap',
-                      isActive ? 'bg-primary text-white' : isCompleted ? 'text-foreground hover:bg-card' : 'text-muted-foreground cursor-not-allowed'
+                      isActive ? 'bg-primary text-white' : isVisited ? 'text-foreground hover:bg-card' : 'text-muted-foreground cursor-not-allowed'
                     )}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
@@ -346,9 +353,9 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: Add
           </aside>
 
           {/* Main Content */}
-          <main className="flex-1 p-6 overflow-y-auto">
-            {/* Header */}
-            <div className="flex items-start justify-between mb-6">
+          <main className="flex-1 flex flex-col overflow-hidden">
+            {/* Header - Fixed */}
+            <div className="flex items-start justify-between p-6 pb-4 shrink-0">
               <div>
                 <h1 className="text-xl font-bold">Add New Subscription</h1>
                 <p className="text-sm text-muted-foreground">
@@ -365,8 +372,9 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: Add
               </Button>
             </div>
 
-            {/* Step Content */}
-            <div className="space-y-6">
+            {/* Step Content - Scrollable */}
+            <div className="flex-1 overflow-y-auto px-6">
+              <div className="space-y-6 pb-6">
               {/* Step 1: Service */}
               {currentStepData.id === 'service' && (
                 <div className="space-y-4">
@@ -698,20 +706,24 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: Add
                   </div>
                 </div>
               )}
+              </div>
             </div>
 
-            {/* Footer Actions */}
-            <div className="flex justify-between items-center mt-8 pt-6 border-t border-border">
+            {/* Footer Actions - Fixed at bottom */}
+            <div className="shrink-0 flex justify-between items-center px-6 py-4 border-t border-border bg-background">
               <Button variant="outline" onClick={currentStep === 0 ? handleClose : handleBack}>
                 {currentStep === 0 ? 'Cancel' : <><ArrowLeft className="w-4 h-4" />Back</>}
               </Button>
               <div className="flex gap-2">
-                {isOptionalStep && !isLastStep && (
-                  <Button variant="secondary" onClick={handleNext}>Skip</Button>
+                {/* Skip & Save button from Schedule step onwards (step index >= 2), but not on last step */}
+                {currentStep >= 2 && !isLastStep && (
+                  <Button variant="secondary" onClick={handleSubmit} disabled={submitting}>
+                    {submitting ? 'Saving...' : 'Skip & Save'}
+                  </Button>
                 )}
                 {isLastStep ? (
                   <Button onClick={handleSubmit} disabled={submitting}>
-                    {submitting ? 'Creating...' : 'Next'}
+                    {submitting ? 'Saving...' : 'Save'}
                   </Button>
                 ) : (
                   <Button onClick={handleNext} disabled={!canProceed()}>

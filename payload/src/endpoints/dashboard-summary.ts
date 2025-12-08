@@ -118,8 +118,43 @@ export const dashboardSummaryEndpoint: Endpoint = {
         spendByCategory[catKey].count += 1
       }
 
+      // Get all upcoming renewals (next 30 days)
+      const thirtyDaysFromNow = new Date()
+      thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30)
+
+      const allUpcomingRenewals: Array<{
+        id: number
+        name: string
+        price: number
+        currency: string
+        nextPaymentDate: string
+        daysUntil: number
+        logoUrl?: string
+      }> = []
+
+      for (const sub of subscriptions.docs) {
+        if (sub.nextBillingDate) {
+          const nextPayment = new Date(sub.nextBillingDate)
+          if (nextPayment >= now && nextPayment <= thirtyDaysFromNow) {
+            const daysUntil = Math.ceil(
+              (nextPayment.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+            )
+            allUpcomingRenewals.push({
+              id: sub.id,
+              name: sub.name,
+              price: sub.amount || 0,
+              currency: sub.currency || 'USD',
+              nextPaymentDate: sub.nextBillingDate,
+              daysUntil,
+              logoUrl: sub.logo || undefined,
+            })
+          }
+        }
+      }
+
       // Sort upcoming payments by date
       upcomingPayments.sort((a, b) => a.daysUntil - b.daysUntil)
+      allUpcomingRenewals.sort((a, b) => a.daysUntil - b.daysUntil)
 
       // Convert spend by category to array and sort
       const categoryBreakdown = Object.entries(spendByCategory)
@@ -131,15 +166,38 @@ export const dashboardSummaryEndpoint: Endpoint = {
         }))
         .sort((a, b) => b.monthlyAmount - a.monthlyAmount)
 
+      // Top category
+      const topCategory = categoryBreakdown.length > 0 ? categoryBreakdown[0] : null
+
+      // Next renewal
+      const nextRenewal = allUpcomingRenewals.length > 0 ? allUpcomingRenewals[0] : null
+
+      // Monthly spending trend (last 6 months)
+      const monthlyTrend: Array<{ month: string; amount: number }> = []
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date()
+        date.setMonth(date.getMonth() - i)
+        monthlyTrend.push({
+          month: monthNames[date.getMonth()],
+          amount: Math.round(totalMonthlySpend * 100) / 100, // For now, use current monthly spend (historical data would require payment history)
+        })
+      }
+
       return Response.json({
         totalSubscriptions: subscriptions.totalDocs,
-        activeSubscriptions: subscriptions.docs.filter((s) => s.autoRenew).length,
+        activeSubscriptions: subscriptions.docs.filter((s) => s.autoRenew !== false).length,
         trialSubscriptions: subscriptions.docs.filter((s) => s.freeTrialEndDate && new Date(s.freeTrialEndDate) > now).length,
         totalMonthlySpend: Math.round(totalMonthlySpend * 100) / 100,
         totalYearlySpend: Math.round(totalMonthlySpend * 12 * 100) / 100,
         upcomingPaymentsCount: upcomingPayments.length,
-        upcomingPayments: upcomingPayments.slice(0, 5), // Top 5
+        upcomingPayments: upcomingPayments.slice(0, 5), // Top 5 in next 7 days
+        allUpcomingRenewals: allUpcomingRenewals.slice(0, 10), // Top 10 in next 30 days
         categoryBreakdown,
+        topCategory,
+        nextRenewal,
+        monthlyTrend,
         currency: req.user.currency || 'USD',
       })
     } catch (error) {
