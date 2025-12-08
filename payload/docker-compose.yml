@@ -2,7 +2,7 @@ services:
   payload:
     image: renolation/wallie:latest
     ports:
-      - '3000:3000'
+      - '4567:3000'
     environment:
       - DATABASE_URI=postgresql://user:password@host:5432/wallie
       - PAYLOAD_SECRET=your-secret-key

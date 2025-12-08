@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useCallback, useEffect, useRef } from 'react'
-import { X, Plus, Trash2, Upload, ChevronDown, ArrowRight, ArrowLeft, DollarSign, Percent, Layers, Tag, CalendarDays, FileText, Bell, Users, RefreshCw, Info, Search, Sparkles } from 'lucide-react'
+import { X, Plus, Trash2, Upload, ArrowRight, ArrowLeft, DollarSign, Percent, Layers, Tag, CalendarDays, FileText, Bell, Users, RefreshCw, Info, Search, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'

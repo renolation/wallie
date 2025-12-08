@@ -47,7 +47,12 @@ export default function SettingsClient({ initialUser, initialSettings }: Setting
 
   // Payment method dialog state
   const [showPaymentDialog, setShowPaymentDialog] = useState(false)
-  const [newPaymentMethod, setNewPaymentMethod] = useState({
+  const [newPaymentMethod, setNewPaymentMethod] = useState<{
+    type: 'credit_card' | 'debit_card' | 'paypal' | 'bank_account' | 'apple_pay' | 'google_pay'
+    label: string
+    lastFour: string
+    expiryDate: string
+  }>({
     type: 'credit_card',
     label: '',
     lastFour: '',
@@ -853,7 +858,7 @@ export default function SettingsClient({ initialUser, initialSettings }: Setting
               <Select
                 id="paymentType"
                 value={newPaymentMethod.type}
-                onChange={(e) => setNewPaymentMethod({ ...newPaymentMethod, type: e.target.value })}
+                onChange={(e) => setNewPaymentMethod({ ...newPaymentMethod, type: e.target.value as 'credit_card' | 'debit_card' | 'paypal' | 'bank_account' | 'apple_pay' | 'google_pay' })}
               >
                 <option value="credit_card">Credit Card</option>
                 <option value="debit_card">Debit Card</option>
