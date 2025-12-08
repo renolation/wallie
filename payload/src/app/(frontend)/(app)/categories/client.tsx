@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { PlusCircle, Search, MoreHorizontal, List, FolderOpen, Package, DollarSign, CreditCard } from 'lucide-react'
+import { PlusCircle, Search, MoreHorizontal, List, Package, DollarSign, CreditCard } from 'lucide-react'
+import { CategoryIcon } from '@/components/ui/category-icon'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -134,7 +135,7 @@ export default function CategoriesClient({ initialSubscriptions, initialCategori
                       'flex items-center justify-center rounded-lg shrink-0 w-10 h-10',
                       isSelected ? 'bg-white/20' : 'bg-muted'
                     )}>
-                      <FolderOpen className="w-4 h-4" />
+                      <CategoryIcon name={category.icon} />
                     </div>
                     <div className="flex flex-col">
                       <p className="font-medium text-sm">{category.name}</p>
