@@ -9,9 +9,9 @@ export const Plans: CollectionConfig = {
   },
   access: {
     read: () => true, // Plans are public
-    create: ({ req: { user } }) => user?.role === 'admin',
-    update: ({ req: { user } }) => user?.role === 'admin',
-    delete: ({ req: { user } }) => user?.role === 'admin',
+    create: ({ req: { user } }) => user?.roles?.includes('admin') ?? false,
+    update: ({ req: { user } }) => user?.roles?.includes('admin') ?? false,
+    delete: ({ req: { user } }) => user?.roles?.includes('admin') ?? false,
   },
   fields: [
     {
@@ -159,20 +159,20 @@ export const Plans: CollectionConfig = {
         },
       ],
     },
-    // Stripe/Payment Integration
+    // Polar.sh Payment Integration
     {
-      name: 'stripeProductId',
+      name: 'polarProductId',
       type: 'text',
       admin: {
-        description: 'Stripe Product ID',
+        description: 'Polar Product ID',
         position: 'sidebar',
       },
     },
     {
-      name: 'stripePriceId',
+      name: 'polarPriceId',
       type: 'text',
       admin: {
-        description: 'Stripe Price ID',
+        description: 'Polar Price ID',
         position: 'sidebar',
       },
     },

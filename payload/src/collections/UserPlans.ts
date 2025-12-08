@@ -10,12 +10,12 @@ export const UserPlans: CollectionConfig = {
   access: {
     read: ({ req: { user } }) => {
       if (!user) return false
-      if (user.role === 'admin') return true
+      if (user.roles?.includes('admin')) return true
       return { user: { equals: user.id } }
     },
-    create: ({ req: { user } }) => user?.role === 'admin',
-    update: ({ req: { user } }) => user?.role === 'admin',
-    delete: ({ req: { user } }) => user?.role === 'admin',
+    create: ({ req: { user } }) => user?.roles?.includes('admin') ?? false,
+    update: ({ req: { user } }) => user?.roles?.includes('admin') ?? false,
+    delete: ({ req: { user } }) => user?.roles?.includes('admin') ?? false,
   },
   fields: [
     {
@@ -92,7 +92,7 @@ export const UserPlans: CollectionConfig = {
       name: 'paymentProvider',
       type: 'select',
       options: [
-        { label: 'Stripe', value: 'stripe' },
+        { label: 'Polar', value: 'polar' },
         { label: 'Apple App Store', value: 'apple' },
         { label: 'Google Play', value: 'google' },
         { label: 'Manual', value: 'manual' },

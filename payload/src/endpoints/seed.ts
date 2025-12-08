@@ -274,7 +274,30 @@ export const seedPopularServicesEndpoint: Endpoint = {
   },
 }
 
-const DEFAULT_PLANS = [
+const DEFAULT_PLANS: Array<{
+  name: string
+  slug: string
+  description: string
+  price: number
+  currency: string
+  billingCycle: 'free' | 'monthly' | 'yearly' | 'lifetime'
+  isActive: boolean
+  sortOrder: number
+  limits: {
+    maxSubscriptions: number
+    maxHouseholds: number
+    maxHouseholdMembers: number
+  }
+  features: {
+    advancedAnalytics: boolean
+    aiAssistant: boolean
+    smartNotifications: boolean
+    emailAlerts: boolean
+    pushAlerts: boolean
+    discordAlerts: boolean
+    priceAlerts: boolean
+  }
+}> = [
   {
     name: 'Free',
     slug: 'free',

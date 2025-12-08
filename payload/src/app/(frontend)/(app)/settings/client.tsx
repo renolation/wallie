@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { User, Bell, CreditCard, Settings as SettingsIcon, Plus, Shield, Trash2 } from 'lucide-react'
+import { User, Bell, CreditCard, Settings as SettingsIcon, Plus, Shield, Trash2, Receipt, Check, Sparkles, Crown, Zap, Loader2 } from 'lucide-react'
+import type { Plan, UserPlan } from '@/payload-types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -17,6 +18,7 @@ import type { UserSetting } from '@/payload-types'
 
 const settingsTabs = [
   { id: 'account', label: 'Account', icon: User },
+  { id: 'billing', label: 'Billing', icon: Receipt },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'payments', label: 'Payments', icon: CreditCard },
   { id: 'general', label: 'General', icon: SettingsIcon },
@@ -33,11 +35,15 @@ interface UserData {
 interface SettingsClientProps {
   initialUser: UserData
   initialSettings: UserSetting | null
+  currentPlan: Plan | null
+  userPlan: UserPlan | null
+  allPlans: Plan[]
 }
 
-export default function SettingsClient({ initialUser, initialSettings }: SettingsClientProps) {
+export default function SettingsClient({ initialUser, initialSettings, currentPlan, userPlan, allPlans }: SettingsClientProps) {
   const [activeTab, setActiveTab] = useState('account')
   const [saving, setSaving] = useState(false)
+  const [upgradingPlan, setUpgradingPlan] = useState<string | null>(null)
   const [settings, setSettings] = useState<UserSetting | null>(initialSettings)
   const [firstName, setFirstName] = useState(initialUser.firstName || '')
   const [lastName, setLastName] = useState(initialUser.lastName || '')
@@ -321,6 +327,61 @@ export default function SettingsClient({ initialUser, initialSettings }: Setting
     })
   }
 
+  // Billing functions
+  const handleUpgradePlan = async (planSlug: string) => {
+    setUpgradingPlan(planSlug)
+    try {
+      const res = await fetch('/api/polar/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ planSlug }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create checkout')
+      }
+
+      // Redirect to Polar checkout
+      window.location.href = data.checkoutUrl
+    } catch (error) {
+      console.error('Upgrade error:', error)
+      addToast(error instanceof Error ? error.message : 'Failed to start upgrade', 'error')
+      setUpgradingPlan(null)
+    }
+  }
+
+  const handleManageSubscription = async () => {
+    try {
+      const res = await fetch('/api/polar/portal', {
+        credentials: 'include',
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to get portal URL')
+      }
+
+      window.open(data.portalUrl, '_blank')
+    } catch (error) {
+      console.error('Portal error:', error)
+      addToast('Failed to open subscription portal', 'error')
+    }
+  }
+
+  const formatPrice = (cents: number) => {
+    return (cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)
+  }
+
+  const getPlanIcon = (slug: string) => {
+    if (slug === 'free') return Sparkles
+    if (slug === 'lifetime') return Crown
+    return Zap
+  }
+
   const fullName = `${firstName} ${lastName}`.trim() || 'User'
 
   return (
@@ -473,6 +534,239 @@ export default function SettingsClient({ initialUser, initialSettings }: Setting
             </Card>
           )}
 
+          {/* Billing - App Subscription */}
+          {activeTab === 'billing' && (
+            <>
+              {/* Current Plan Card */}
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle className="text-lg">Current Plan</CardTitle>
+                  <CardDescription>Your Wallie subscription status.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20">
+                    <div className="flex items-center gap-4">
+                      <div className="flex size-12 items-center justify-center rounded-lg bg-primary text-white">
+                        {currentPlan?.slug === 'lifetime' ? (
+                          <Crown className="w-6 h-6" />
+                        ) : currentPlan?.slug === 'free' ? (
+                          <Sparkles className="w-6 h-6" />
+                        ) : (
+                          <Zap className="w-6 h-6" />
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg">{currentPlan?.name || 'Free'}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {currentPlan?.billingCycle === 'free' && 'Free forever'}
+                          {currentPlan?.billingCycle === 'monthly' && `$${formatPrice(currentPlan.price)}/month`}
+                          {currentPlan?.billingCycle === 'yearly' && `$${formatPrice(currentPlan.price)}/year`}
+                          {currentPlan?.billingCycle === 'lifetime' && 'One-time purchase'}
+                        </p>
+                      </div>
+                    </div>
+                    {userPlan?.paymentProvider === 'polar' && currentPlan?.billingCycle !== 'lifetime' && currentPlan?.billingCycle !== 'free' && (
+                      <Button variant="outline" size="sm" onClick={handleManageSubscription}>
+                        Manage Subscription
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Plan Features */}
+                  {currentPlan && (
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Check className="w-4 h-4 text-primary" />
+                        <span>
+                          {currentPlan.limits?.maxSubscriptions === -1
+                            ? 'Unlimited subscriptions'
+                            : `Up to ${currentPlan.limits?.maxSubscriptions || 5} subscriptions`}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Check className="w-4 h-4 text-primary" />
+                        <span>
+                          {currentPlan.limits?.maxHouseholds === -1
+                            ? 'Unlimited households'
+                            : `Up to ${currentPlan.limits?.maxHouseholds || 1} household`}
+                        </span>
+                      </div>
+                      {currentPlan.features?.advancedAnalytics && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Check className="w-4 h-4 text-primary" />
+                          <span>Advanced analytics</span>
+                        </div>
+                      )}
+                      {currentPlan.features?.aiAssistant && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Check className="w-4 h-4 text-primary" />
+                          <span>AI assistant</span>
+                        </div>
+                      )}
+                      {currentPlan.features?.smartNotifications && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Check className="w-4 h-4 text-primary" />
+                          <span>Smart notifications</span>
+                        </div>
+                      )}
+                      {currentPlan.features?.priceAlerts && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Check className="w-4 h-4 text-primary" />
+                          <span>Price alerts</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Upgrade Options */}
+              {(!currentPlan || currentPlan.billingCycle === 'free') && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Upgrade Your Plan</CardTitle>
+                    <CardDescription>Get more features and unlimited access.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {allPlans
+                        .filter((plan) => plan.slug !== 'free')
+                        .map((plan) => {
+                          const PlanIcon = getPlanIcon(plan.slug)
+                          const isCurrentPlan = currentPlan?.slug === plan.slug
+
+                          return (
+                            <div
+                              key={plan.id}
+                              className={cn(
+                                'relative rounded-xl border p-4 transition-all',
+                                plan.slug === 'lifetime'
+                                  ? 'border-yellow-500/50 bg-gradient-to-b from-yellow-500/10 to-transparent'
+                                  : 'border-border hover:border-primary/50'
+                              )}
+                            >
+                              {plan.slug === 'lifetime' && (
+                                <div className="absolute -top-2 left-1/2 -translate-x-1/2">
+                                  <Badge className="bg-yellow-500 text-yellow-950 hover:bg-yellow-500">Best Value</Badge>
+                                </div>
+                              )}
+                              <div className="flex flex-col items-center text-center">
+                                <div className={cn(
+                                  'flex size-10 items-center justify-center rounded-lg mb-3',
+                                  plan.slug === 'lifetime' ? 'bg-yellow-500 text-yellow-950' : 'bg-primary/10 text-primary'
+                                )}>
+                                  <PlanIcon className="w-5 h-5" />
+                                </div>
+                                <h4 className="font-bold">{plan.name}</h4>
+                                <div className="mt-1">
+                                  <span className="text-2xl font-bold">${formatPrice(plan.price)}</span>
+                                  {plan.billingCycle === 'monthly' && <span className="text-muted-foreground">/mo</span>}
+                                  {plan.billingCycle === 'yearly' && <span className="text-muted-foreground">/yr</span>}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {plan.billingCycle === 'lifetime' && 'One-time payment'}
+                                  {plan.billingCycle === 'yearly' && 'Save 17%'}
+                                </p>
+                                <Button
+                                  className="w-full mt-4"
+                                  variant={plan.slug === 'lifetime' ? 'default' : 'outline'}
+                                  disabled={isCurrentPlan || upgradingPlan === plan.slug}
+                                  onClick={() => handleUpgradePlan(plan.slug)}
+                                >
+                                  {upgradingPlan === plan.slug ? (
+                                    <>
+                                      <Loader2 className="w-4 h-4 animate-spin" />
+                                      Processing...
+                                    </>
+                                  ) : isCurrentPlan ? (
+                                    'Current Plan'
+                                  ) : (
+                                    'Upgrade'
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+                          )
+                        })}
+                    </div>
+
+                    {/* Features Comparison */}
+                    <div className="mt-6 pt-6 border-t border-border">
+                      <h4 className="text-sm font-medium mb-3">All Pro features include:</h4>
+                      <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-primary" />
+                          Unlimited subscriptions
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-primary" />
+                          Unlimited households
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-primary" />
+                          Advanced analytics
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-primary" />
+                          AI quick entry
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-primary" />
+                          Smart notifications
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-primary" />
+                          Price hike alerts
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* If already on paid plan, show upgrade to lifetime option */}
+              {currentPlan && currentPlan.billingCycle !== 'free' && currentPlan.billingCycle !== 'lifetime' && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Crown className="w-5 h-5 text-yellow-500" />
+                      Upgrade to Lifetime
+                    </CardTitle>
+                    <CardDescription>One-time payment, forever access.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {allPlans
+                      .filter((plan) => plan.slug === 'lifetime')
+                      .map((plan) => (
+                        <div key={plan.id} className="flex items-center justify-between p-4 rounded-xl border border-yellow-500/30 bg-yellow-500/5">
+                          <div>
+                            <h4 className="font-bold">{plan.name}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              Pay ${formatPrice(plan.price)} once, use forever
+                            </p>
+                          </div>
+                          <Button
+                            onClick={() => handleUpgradePlan(plan.slug)}
+                            disabled={upgradingPlan === plan.slug}
+                            className="bg-yellow-500 hover:bg-yellow-600 text-yellow-950"
+                          >
+                            {upgradingPlan === plan.slug ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Processing...
+                              </>
+                            ) : (
+                              'Upgrade to Lifetime'
+                            )}
+                          </Button>
+                        </div>
+                      ))}
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          )}
+
           {/* Notification Preferences */}
           {activeTab === 'notifications' && (
             <Card className="mb-6">
@@ -593,13 +887,13 @@ export default function SettingsClient({ initialUser, initialSettings }: Setting
             </Card>
           )}
 
-          {/* Payment Methods */}
+          {/* Payment Methods - For tracking subscription payments */}
           {activeTab === 'payments' && (
             <Card className="mb-6">
               <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <div>
                   <CardTitle className="text-lg">Payment Methods</CardTitle>
-                  <CardDescription>Add and manage your payment methods.</CardDescription>
+                  <CardDescription>Track the payment methods you use for your subscriptions.</CardDescription>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => setShowPaymentDialog(true)}>
                   <Plus className="w-4 h-4" />

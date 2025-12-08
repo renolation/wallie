@@ -22,6 +22,7 @@
     "@payloadcms/next": "3.66.0",
     "@payloadcms/richtext-lexical": "3.66.0",
     "@payloadcms/ui": "3.66.0",
+    "@polar-sh/sdk": "^0.41.5",
     "@tailwindcss/postcss": "^4.1.17",
     "autoprefixer": "^10.4.22",
     "class-variance-authority": "^0.7.1",
@@ -36,6 +37,7 @@
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "sharp": "0.34.2",
+    "stripe": "^20.0.0",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.17"
   },

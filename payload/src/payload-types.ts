@@ -534,13 +534,13 @@ export interface Plan {
     priceAlerts?: boolean | null;
   };
   /**
-   * Stripe Product ID
+   * Polar Product ID
    */
-  stripeProductId?: string | null;
+  polarProductId?: string | null;
   /**
-   * Stripe Price ID
+   * Polar Price ID
    */
-  stripePriceId?: string | null;
+  polarPriceId?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -565,7 +565,7 @@ export interface UserPlan {
    * Trial period end date
    */
   trialEndsAt?: string | null;
-  paymentProvider?: ('stripe' | 'apple' | 'google' | 'manual') | null;
+  paymentProvider?: ('polar' | 'apple' | 'google' | 'manual') | null;
   /**
    * Subscription ID from payment provider
    */
@@ -946,8 +946,8 @@ export interface PlansSelect<T extends boolean = true> {
         discordAlerts?: T;
         priceAlerts?: T;
       };
-  stripeProductId?: T;
-  stripePriceId?: T;
+  polarProductId?: T;
+  polarPriceId?: T;
   updatedAt?: T;
   createdAt?: T;
 }

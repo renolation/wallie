@@ -2,7 +2,9 @@ import { getPayload } from 'payload'
 import { headers, cookies } from 'next/headers'
 import config from '@payload-config'
 import SettingsClient from './client'
-import type { User, UserSetting } from '@/payload-types'
+import type { User, UserSetting, Plan, UserPlan } from '@/payload-types'
+
+export const dynamic = 'force-dynamic'
 
 export default async function SettingsPage() {
   const payload = await getPayload({ config })
@@ -13,18 +15,24 @@ export default async function SettingsPage() {
   const token = cookieStore.get('payload-token')?.value
 
   if (!token) {
-    return null // Layout will handle redirect
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <p className="text-muted-foreground">Please log in to view your settings</p>
+      </div>
+    )
   }
 
   // Get current user using the auth token
   let user: User | null = null
   let userSettings: UserSetting | null = null
+  let currentUserPlan: UserPlan | null = null
+  let allPlans: Plan[] = []
 
   try {
     // Verify the token and get user
     const { user: authUser } = await payload.auth({ headers: headersList })
 
-    if (authUser) {
+    if (authUser && authUser.id) {
       user = authUser as User
 
       // Get user settings
@@ -44,14 +52,46 @@ export default async function SettingsPage() {
           data: { user: user.id },
         })
       }
+
+      // Get user's current plan
+      const userPlanResult = await payload.find({
+        collection: 'user-plans',
+        where: {
+          user: { equals: user.id },
+          status: { in: ['active', 'trialing'] },
+        },
+        limit: 1,
+        depth: 1, // Get plan details
+        sort: '-createdAt',
+      })
+
+      if (userPlanResult.docs.length > 0) {
+        currentUserPlan = userPlanResult.docs[0]
+      }
+
+      // Get all available plans
+      const plansResult = await payload.find({
+        collection: 'plans',
+        where: { isActive: { equals: true } },
+        sort: 'sortOrder',
+        limit: 10,
+      })
+      allPlans = plansResult.docs
     }
   } catch (error) {
     console.error('Error fetching user settings:', error)
   }
 
   if (!user) {
-    return null // Layout will handle redirect
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <p className="text-muted-foreground">Please log in to view your settings</p>
+      </div>
+    )
   }
+
+  // Find the free plan as default
+  const freePlan = allPlans.find((p) => p.slug === 'free')
 
   return (
     <SettingsClient
@@ -62,6 +102,9 @@ export default async function SettingsPage() {
         lastName: user.lastName || undefined,
       }}
       initialSettings={userSettings}
+      currentPlan={currentUserPlan ? (currentUserPlan.plan as Plan) : freePlan || null}
+      userPlan={currentUserPlan}
+      allPlans={allPlans}
     />
   )
 }
