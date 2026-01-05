@@ -32,7 +32,7 @@ interface Subscription {
   freeTrialEndDate?: string
   category?: number | { id: number }
   notes?: string
-  tags?: Array<{ tag: string }>
+  tags?: Array<{ tag?: string | null; id?: string | null }>
   household?: number | { id: number }
 }
 

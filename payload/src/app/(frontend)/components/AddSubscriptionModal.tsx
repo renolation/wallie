@@ -128,7 +128,7 @@ interface SubscriptionData {
   autoRenew: boolean
   category?: number | { id: number }
   notes?: string
-  tags?: Array<{ tag: string }>
+  tags?: Array<{ tag?: string | null; id?: string | null }>
   household?: number | { id: number }
 }
 
@@ -194,7 +194,7 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess, mode 
           freeTrialEndDate: initialData.freeTrialEndDate ? initialData.freeTrialEndDate.split('T')[0] : '',
           autoRenew: initialData.autoRenew ?? true,
           description: initialData.description || '',
-          tags: initialData.tags?.map(t => t.tag).join(', ') || '',
+          tags: initialData.tags?.map(t => t.tag).filter(Boolean).join(', ') || '',
           notes: initialData.notes || '',
           household: householdId ? String(householdId) : '',
           memberShares: [],
