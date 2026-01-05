@@ -69,6 +69,7 @@ export default async function SubscriptionsPage() {
   const clientSubscriptions = subscriptions.docs.map((sub) => {
     const categoryName = typeof sub.category === 'object' ? sub.category?.name : 'Uncategorized'
     const catName = categoryName || 'Uncategorized'
+    const categoryId = typeof sub.category === 'object' ? sub.category?.id : sub.category
 
     return {
       id: sub.id,
@@ -82,6 +83,17 @@ export default async function SubscriptionsPage() {
       autoRenew: sub.autoRenew ?? true,
       categoryName: catName,
       categoryColor: categoryColors[catName] || categoryColors.Uncategorized,
+      // Additional fields for edit/duplicate
+      websiteUrl: sub.websiteUrl || undefined,
+      description: sub.description || undefined,
+      promoPrice: sub.promoPrice || undefined,
+      promoEndDate: sub.promoEndDate || undefined,
+      startDate: sub.startDate || undefined,
+      freeTrialEndDate: sub.freeTrialEndDate || undefined,
+      category: categoryId,
+      notes: sub.notes || undefined,
+      tags: sub.tags || undefined,
+      household: typeof sub.household === 'object' ? sub.household?.id : sub.household,
     }
   })
 

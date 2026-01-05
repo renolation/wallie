@@ -110,15 +110,40 @@ function extractDomainFromUrl(url: string): string | null {
   }
 }
 
+interface SubscriptionData {
+  id?: number
+  name: string
+  logo?: string
+  websiteUrl?: string
+  description?: string
+  amount: number
+  currency: string
+  billingCycle: string
+  frequency: number
+  promoPrice?: number
+  promoEndDate?: string
+  startDate: string
+  nextBillingDate?: string
+  freeTrialEndDate?: string
+  autoRenew: boolean
+  category?: number | { id: number }
+  notes?: string
+  tags?: Array<{ tag: string }>
+  household?: number | { id: number }
+}
+
 interface AddSubscriptionModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
+  mode?: 'create' | 'edit'
+  initialData?: SubscriptionData | null
 }
 
-export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: AddSubscriptionModalProps) {
+export default function AddSubscriptionModal({ isOpen, onClose, onSuccess, mode = 'create', initialData = null }: AddSubscriptionModalProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [highestStepReached, setHighestStepReached] = useState(0)
+  const isEditMode = mode === 'edit' && initialData !== null
   const [categories, setCategories] = useState<Category[]>([])
   const [popularServices, setPopularServices] = useState<PopularService[]>([])
   const [serviceSearch, setServiceSearch] = useState('')
@@ -143,8 +168,51 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: Add
     if (isOpen) {
       fetchCategories()
       fetchPopularServices()
+
+      // Prefill form in edit mode
+      if (isEditMode && initialData) {
+        const categoryId = typeof initialData.category === 'object'
+          ? initialData.category?.id
+          : initialData.category
+        const householdId = typeof initialData.household === 'object'
+          ? initialData.household?.id
+          : initialData.household
+
+        setForm({
+          name: initialData.name || '',
+          category: categoryId ? String(categoryId) : '',
+          websiteUrl: initialData.websiteUrl || '',
+          logo: initialData.logo || '',
+          amount: initialData.amount ? String(initialData.amount) : '',
+          currency: initialData.currency || 'USD',
+          billingCycleCount: initialData.frequency ? String(initialData.frequency) : '1',
+          billingCycleUnit: initialData.billingCycle || 'monthly',
+          promoPrice: initialData.promoPrice ? String(initialData.promoPrice) : '',
+          promoEndDate: initialData.promoEndDate ? initialData.promoEndDate.split('T')[0] : '',
+          startDate: initialData.startDate ? initialData.startDate.split('T')[0] : new Date().toISOString().split('T')[0],
+          nextBillingDate: initialData.nextBillingDate ? initialData.nextBillingDate.split('T')[0] : '',
+          freeTrialEndDate: initialData.freeTrialEndDate ? initialData.freeTrialEndDate.split('T')[0] : '',
+          autoRenew: initialData.autoRenew ?? true,
+          description: initialData.description || '',
+          tags: initialData.tags?.map(t => t.tag).join(', ') || '',
+          notes: initialData.notes || '',
+          household: householdId ? String(householdId) : '',
+          memberShares: [],
+          enableRenewalReminder: true,
+          enableRefundReminder: true,
+          enableContractExpiry: false,
+        })
+
+        if (initialData.logo) {
+          setLogoPreview(initialData.logo)
+          setLogoError(false)
+        }
+
+        // Allow navigation to all steps in edit mode
+        setHighestStepReached(STEPS.length - 1)
+      }
     }
-  }, [isOpen])
+  }, [isOpen, isEditMode, initialData])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -278,21 +346,26 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: Add
         household: form.household ? parseInt(form.household) : undefined,
       }
 
-      const res = await fetch('/api/subscriptions', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const url = isEditMode && initialData?.id
+        ? `/api/subscriptions/${initialData.id}`
+        : '/api/subscriptions'
+      const method = isEditMode ? 'PATCH' : 'POST'
+
+      const res = await fetch(url, {
+        method, headers: { 'Content-Type': 'application/json' },
         credentials: 'include', body: JSON.stringify(payload),
       })
 
       if (!res.ok) {
         const errorData = await res.json()
-        throw new Error(errorData.errors?.[0]?.message || 'Failed to create subscription')
+        throw new Error(errorData.errors?.[0]?.message || `Failed to ${isEditMode ? 'update' : 'create'} subscription`)
       }
 
       handleClose()
       onSuccess()
     } catch (err) {
       console.error('Submit error:', err)
-      alert(err instanceof Error ? err.message : 'Failed to create subscription')
+      alert(err instanceof Error ? err.message : `Failed to ${isEditMode ? 'update' : 'create'} subscription`)
     } finally {
       setSubmitting(false)
     }
@@ -325,8 +398,8 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: Add
           {/* Sidebar Navigation */}
           <aside className="w-full md:w-56 p-4 border-b md:border-b-0 md:border-r border-border shrink-0">
             <div className="mb-4">
-              <h2 className="text-lg font-bold">Add New Subscription</h2>
-              <p className="text-xs text-muted-foreground">Add a new subscription to track your recurring payments</p>
+              <h2 className="text-lg font-bold">{isEditMode ? 'Edit Subscription' : 'Add New Subscription'}</h2>
+              <p className="text-xs text-muted-foreground">{isEditMode ? 'Update your subscription details' : 'Add a new subscription to track your recurring payments'}</p>
             </div>
             <nav className="flex flex-row md:flex-col gap-1 overflow-x-auto md:overflow-visible">
               {STEPS.map((step, index) => {
@@ -357,12 +430,12 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: Add
             {/* Header - Fixed */}
             <div className="flex items-start justify-between p-6 pb-4 shrink-0">
               <div>
-                <h1 className="text-xl font-bold">Add New Subscription</h1>
+                <h1 className="text-xl font-bold">{isEditMode ? 'Edit Subscription' : 'Add New Subscription'}</h1>
                 <p className="text-sm text-muted-foreground">
-                  {currentStepData.id === 'service' && 'Add a new subscription to track your recurring payments'}
-                  {currentStepData.id === 'pricing' && 'Set the pricing details for your new recurring payment.'}
-                  {currentStepData.id === 'schedule' && 'Set the schedule for your new subscription'}
-                  {currentStepData.id === 'details' && 'Add details for your new subscription.'}
+                  {currentStepData.id === 'service' && (isEditMode ? 'Update your subscription service details' : 'Add a new subscription to track your recurring payments')}
+                  {currentStepData.id === 'pricing' && (isEditMode ? 'Update the pricing details for your subscription.' : 'Set the pricing details for your new recurring payment.')}
+                  {currentStepData.id === 'schedule' && (isEditMode ? 'Update the schedule for your subscription' : 'Set the schedule for your new subscription')}
+                  {currentStepData.id === 'details' && (isEditMode ? 'Update details for your subscription.' : 'Add details for your new subscription.')}
                   {currentStepData.id === 'reminders' && 'Set up important reminders for your subscription'}
                   {currentStepData.id === 'sharing' && 'Share the subscription with your household members.'}
                 </p>
@@ -718,12 +791,12 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess }: Add
                 {/* Skip & Save button from Schedule step onwards (step index >= 2), but not on last step */}
                 {currentStep >= 2 && !isLastStep && (
                   <Button variant="secondary" onClick={handleSubmit} disabled={submitting}>
-                    {submitting ? 'Saving...' : 'Skip & Save'}
+                    {submitting ? (isEditMode ? 'Updating...' : 'Saving...') : (isEditMode ? 'Skip & Update' : 'Skip & Save')}
                   </Button>
                 )}
                 {isLastStep ? (
                   <Button onClick={handleSubmit} disabled={submitting}>
-                    {submitting ? 'Saving...' : 'Save'}
+                    {submitting ? (isEditMode ? 'Updating...' : 'Saving...') : (isEditMode ? 'Update' : 'Save')}
                   </Button>
                 ) : (
                   <Button onClick={handleNext} disabled={!canProceed()}>

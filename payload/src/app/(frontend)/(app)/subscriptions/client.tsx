@@ -2,11 +2,12 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Search, MoreHorizontal, ListFilter, ArrowUpDown, ChevronDown } from 'lucide-react'
+import { Plus, Search, MoreHorizontal, ListFilter, ArrowUpDown, ChevronDown, Pencil, Copy, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import AddSubscriptionModal from '../../components/AddSubscriptionModal'
 
@@ -22,6 +23,17 @@ interface Subscription {
   autoRenew: boolean
   categoryName?: string
   categoryColor?: string
+  // Additional fields for edit/duplicate
+  websiteUrl?: string
+  description?: string
+  promoPrice?: number
+  promoEndDate?: string
+  startDate?: string
+  freeTrialEndDate?: string
+  category?: number | { id: number }
+  notes?: string
+  tags?: Array<{ tag: string }>
+  household?: number | { id: number }
 }
 
 interface SubscriptionsClientProps {
@@ -57,17 +69,103 @@ function getStatusBadge(status: SubscriptionStatus) {
 
 export default function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClientProps) {
   const router = useRouter()
-  const [subscriptions] = useState<Subscription[]>(initialSubscriptions)
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>(initialSubscriptions)
   const [searchTerm, setSearchTerm] = useState('')
+
+  // Update subscriptions when initialSubscriptions changes (after router.refresh())
+  React.useEffect(() => {
+    setSubscriptions(initialSubscriptions)
+  }, [initialSubscriptions])
   const [showModal, setShowModal] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [subscriptionToEdit, setSubscriptionToEdit] = useState<Subscription | null>(null)
+  const [deleting, setDeleting] = useState<number | null>(null)
 
   const handleModalClose = () => {
     setShowModal(false)
   }
 
+  const handleEditModalClose = () => {
+    setEditModalOpen(false)
+    setSubscriptionToEdit(null)
+  }
+
   const handleSubscriptionCreated = () => {
     // Refresh the page to get updated data from server
     router.refresh()
+  }
+
+  const handleEdit = (subscription: Subscription) => {
+    setSubscriptionToEdit(subscription)
+    setEditModalOpen(true)
+  }
+
+  const handleDuplicate = async (subscription: Subscription) => {
+    try {
+      const payload = {
+        name: `${subscription.name} (Copy)`,
+        logo: subscription.logo,
+        websiteUrl: subscription.websiteUrl,
+        description: subscription.description,
+        amount: subscription.amount,
+        currency: subscription.currency,
+        promoPrice: subscription.promoPrice,
+        promoEndDate: subscription.promoEndDate,
+        billingCycle: subscription.billingCycle,
+        frequency: subscription.frequency,
+        autoRenew: subscription.autoRenew,
+        startDate: new Date().toISOString().split('T')[0],
+        nextBillingDate: subscription.nextBillingDate,
+        freeTrialEndDate: subscription.freeTrialEndDate,
+        category: typeof subscription.category === 'object' ? subscription.category?.id : subscription.category,
+        notes: subscription.notes,
+        tags: subscription.tags,
+        household: typeof subscription.household === 'object' ? subscription.household?.id : subscription.household,
+      }
+
+      const res = await fetch('/api/subscriptions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.errors?.[0]?.message || 'Failed to duplicate subscription')
+      }
+
+      router.refresh()
+    } catch (err) {
+      console.error('Duplicate error:', err)
+      alert(err instanceof Error ? err.message : 'Failed to duplicate subscription')
+    }
+  }
+
+  const handleDelete = async (subscriptionId: number) => {
+    if (!confirm('Are you sure you want to delete this subscription? This action cannot be undone.')) {
+      return
+    }
+
+    setDeleting(subscriptionId)
+    try {
+      const res = await fetch(`/api/subscriptions/${subscriptionId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.errors?.[0]?.message || 'Failed to delete subscription')
+      }
+
+      router.refresh()
+    } catch (err) {
+      console.error('Delete error:', err)
+      alert(err instanceof Error ? err.message : 'Failed to delete subscription')
+    } finally {
+      setDeleting(null)
+    }
   }
 
   const formatPrice = (price: number, currency: string) => {
@@ -204,9 +302,32 @@ export default function SubscriptionsClient({ initialSubscriptions }: Subscripti
                         {getStatusBadge(status)}
                       </div>
                     </div>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleEdit(sub)}>
+                          <Pencil className="w-4 h-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDuplicate(sub)}>
+                          <Copy className="w-4 h-4" />
+                          Duplicate
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => handleDelete(sub.id)}
+                          disabled={deleting === sub.id}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          {deleting === sub.id ? 'Deleting...' : 'Delete'}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                   <div>
                     <p className="text-muted-foreground text-xs">
@@ -230,6 +351,37 @@ export default function SubscriptionsClient({ initialSubscriptions }: Subscripti
         onClose={handleModalClose}
         onSuccess={handleSubscriptionCreated}
       />
+
+      {/* Edit Subscription Modal */}
+      {subscriptionToEdit && (
+        <AddSubscriptionModal
+          isOpen={editModalOpen}
+          onClose={handleEditModalClose}
+          onSuccess={handleSubscriptionCreated}
+          mode="edit"
+          initialData={{
+            id: subscriptionToEdit.id,
+            name: subscriptionToEdit.name,
+            logo: subscriptionToEdit.logo,
+            websiteUrl: subscriptionToEdit.websiteUrl,
+            description: subscriptionToEdit.description,
+            amount: subscriptionToEdit.amount,
+            currency: subscriptionToEdit.currency,
+            billingCycle: subscriptionToEdit.billingCycle,
+            frequency: subscriptionToEdit.frequency,
+            promoPrice: subscriptionToEdit.promoPrice,
+            promoEndDate: subscriptionToEdit.promoEndDate,
+            startDate: subscriptionToEdit.startDate || new Date().toISOString().split('T')[0],
+            nextBillingDate: subscriptionToEdit.nextBillingDate,
+            freeTrialEndDate: subscriptionToEdit.freeTrialEndDate,
+            autoRenew: subscriptionToEdit.autoRenew,
+            category: subscriptionToEdit.category,
+            notes: subscriptionToEdit.notes,
+            tags: subscriptionToEdit.tags,
+            household: subscriptionToEdit.household,
+          }}
+        />
+      )}
     </div>
   )
 }
