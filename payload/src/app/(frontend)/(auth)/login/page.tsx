@@ -7,6 +7,7 @@ import { Mail, Lock, Loader2, Eye, EyeOff, LogIn, Infinity } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import posthog from 'posthog-js'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -34,6 +35,11 @@ export default function LoginPage() {
       if (!res.ok) {
         throw new Error(data.errors?.[0]?.message || 'Invalid email or password')
       }
+
+      // Capture login event in PostHog
+      posthog.capture('user_logged_in', {
+        method: 'email',
+      })
 
       router.push('/dashboard')
     } catch (err) {

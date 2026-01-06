@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import posthog from 'posthog-js'
 
 interface User {
   id: number
@@ -31,12 +32,22 @@ export function useAuth(requireAuth = true) {
         const data = await res.json()
         setUser(data.user)
 
+        // Identify user in PostHog
+        if (data.user) {
+          posthog.identify(String(data.user.id), {
+            email: data.user.email,
+            firstName: data.user.firstName,
+            lastName: data.user.lastName,
+          })
+        }
+
         // If on login/register page and already logged in, redirect to dashboard
         if (PUBLIC_ROUTES.includes(pathname)) {
           router.push('/dashboard')
         }
       } else {
         setUser(null)
+        posthog.reset()
 
         // If auth is required and not on public route, redirect to login
         if (requireAuth && !PUBLIC_ROUTES.includes(pathname)) {
@@ -62,6 +73,7 @@ export function useAuth(requireAuth = true) {
         credentials: 'include',
       })
       setUser(null)
+      posthog.reset() // Clear PostHog identity on logout
       router.push('/login')
     } catch (err) {
       console.error('Logout failed:', err)
