@@ -2,6 +2,7 @@ import type { Endpoint } from 'payload'
 import {
   checkRenewalNotifications,
   checkTrialEndingNotifications,
+  updateExpiredRenewalDates,
 } from '../jobs/renewal-notifications'
 
 /**
@@ -27,6 +28,10 @@ export const runNotificationJobsEndpoint: Endpoint = {
     }
 
     try {
+      // First, update any expired renewal dates
+      const renewalDatesResult = await updateExpiredRenewalDates(req.payload)
+
+      // Then check for upcoming renewals and create notifications
       const renewalResult = await checkRenewalNotifications(req.payload)
       const trialResult = await checkTrialEndingNotifications(req.payload)
 
@@ -34,6 +39,7 @@ export const runNotificationJobsEndpoint: Endpoint = {
         success: true,
         timestamp: new Date().toISOString(),
         results: {
+          renewalDatesUpdated: renewalDatesResult,
           renewalNotifications: renewalResult,
           trialNotifications: trialResult,
         },

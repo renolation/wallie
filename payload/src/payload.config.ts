@@ -33,6 +33,7 @@ import {
   polarUpgradeEndpoint,
   polarCancelEndpoint,
 } from './endpoints/polar'
+import { initScheduler } from './jobs/scheduler'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -98,4 +99,8 @@ export default buildConfig({
   plugins: [
     // storage-adapter-placeholder
   ],
+  onInit: async (payload) => {
+    // Initialize the cron scheduler for daily jobs
+    initScheduler(payload)
+  },
 })
