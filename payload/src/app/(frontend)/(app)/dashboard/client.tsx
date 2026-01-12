@@ -184,12 +184,12 @@ export default function DashboardClient({ initialData }: DashboardClientProps) {
               </div>
             </div>
             <div className="mt-auto grid min-h-[180px] grid-flow-col items-end justify-items-center gap-4 px-3">
-              {data.monthlyTrend.map((item) => {
+              {data.monthlyTrend.map((item, index) => {
                 const height = maxChartAmount > 0 ? (item.amount / maxChartAmount) * 100 : 0
                 const isCurrentMonth = item.month === currentMonth
                 return (
                   <div
-                    key={item.month}
+                    key={index}
                     className="flex h-full w-full flex-col items-center justify-end gap-2 group"
                   >
                     <div

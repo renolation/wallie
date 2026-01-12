@@ -2,11 +2,18 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Search, MoreHorizontal, ListFilter, ArrowUpDown, ChevronDown } from 'lucide-react'
+import { Plus, Search, MoreHorizontal, ListFilter, ArrowUpDown, ChevronDown, Copy, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import AddSubscriptionModal from '../../components/AddSubscriptionModal'
 
@@ -14,12 +21,21 @@ interface Subscription {
   id: number
   name: string
   logo?: string
+  websiteUrl?: string
+  description?: string
   amount: number
   currency: string
   frequency: number
   billingCycle: string
+  startDate?: string
   nextBillingDate?: string
+  freeTrialEndDate?: string
+  promoPrice?: number
+  promoEndDate?: string
   autoRenew: boolean
+  notes?: string
+  tags?: { tag: string }[]
+  category?: number
   categoryName?: string
   categoryColor?: string
 }
@@ -60,14 +76,57 @@ export default function SubscriptionsClient({ initialSubscriptions }: Subscripti
   const [subscriptions] = useState<Subscription[]>(initialSubscriptions)
   const [searchTerm, setSearchTerm] = useState('')
   const [showModal, setShowModal] = useState(false)
+  const [editingSubscription, setEditingSubscription] = useState<Subscription | null>(null)
 
   const handleModalClose = () => {
     setShowModal(false)
+    setEditingSubscription(null)
   }
 
   const handleSubscriptionCreated = () => {
     // Refresh the page to get updated data from server
     router.refresh()
+  }
+
+  const handleDuplicate = async (sub: Subscription) => {
+    try {
+      const response = await fetch('/api/subscriptions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `${sub.name} (Copy)`,
+          amount: sub.amount,
+          currency: sub.currency,
+          billingCycle: sub.billingCycle,
+          frequency: sub.frequency,
+          autoRenew: sub.autoRenew,
+        }),
+      })
+      if (response.ok) {
+        router.refresh()
+      }
+    } catch (error) {
+      console.error('Failed to duplicate subscription:', error)
+    }
+  }
+
+  const handleEdit = (sub: Subscription) => {
+    setEditingSubscription(sub)
+    setShowModal(true)
+  }
+
+  const handleDelete = async (sub: Subscription) => {
+    if (!confirm(`Are you sure you want to delete "${sub.name}"?`)) return
+    try {
+      const response = await fetch(`/api/subscriptions/${sub.id}`, {
+        method: 'DELETE',
+      })
+      if (response.ok) {
+        router.refresh()
+      }
+    } catch (error) {
+      console.error('Failed to delete subscription:', error)
+    }
   }
 
   const formatPrice = (price: number, currency: string) => {
@@ -204,9 +263,31 @@ export default function SubscriptionsClient({ initialSubscriptions }: Subscripti
                         {getStatusBadge(status)}
                       </div>
                     </div>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleDuplicate(sub)}>
+                          <Copy className="w-4 h-4" />
+                          Duplicate
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEdit(sub)}>
+                          <Pencil className="w-4 h-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => handleDelete(sub)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                   <div>
                     <p className="text-muted-foreground text-xs">
@@ -224,11 +305,12 @@ export default function SubscriptionsClient({ initialSubscriptions }: Subscripti
         )}
       </div>
 
-      {/* Add Subscription Modal */}
+      {/* Add/Edit Subscription Modal */}
       <AddSubscriptionModal
         isOpen={showModal}
         onClose={handleModalClose}
         onSuccess={handleSubscriptionCreated}
+        subscription={editingSubscription}
       />
     </div>
   )

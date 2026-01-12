@@ -69,17 +69,27 @@ export default async function SubscriptionsPage() {
   const clientSubscriptions = subscriptions.docs.map((sub) => {
     const categoryName = typeof sub.category === 'object' ? sub.category?.name : 'Uncategorized'
     const catName = categoryName || 'Uncategorized'
+    const categoryId = typeof sub.category === 'object' ? sub.category?.id : sub.category
 
     return {
       id: sub.id,
       name: sub.name,
       logo: sub.logo || undefined,
+      websiteUrl: sub.websiteUrl || undefined,
+      description: sub.description || undefined,
       amount: sub.amount || 0,
       currency: sub.currency || 'USD',
       frequency: sub.frequency || 1,
       billingCycle: sub.billingCycle || 'monthly',
+      startDate: sub.startDate || undefined,
       nextBillingDate: sub.nextBillingDate || undefined,
+      freeTrialEndDate: sub.freeTrialEndDate || undefined,
+      promoPrice: sub.promoPrice || undefined,
+      promoEndDate: sub.promoEndDate || undefined,
       autoRenew: sub.autoRenew ?? true,
+      notes: sub.notes || undefined,
+      tags: sub.tags || undefined,
+      category: categoryId,
       categoryName: catName,
       categoryColor: categoryColors[catName] || categoryColors.Uncategorized,
     }
