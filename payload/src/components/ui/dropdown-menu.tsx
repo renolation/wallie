@@ -1,69 +1,163 @@
 'use client'
 
 import * as React from 'react'
-import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
 import { cn } from '@/lib/utils'
 
-const DropdownMenu = DropdownMenuPrimitive.Root
-const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger
-const DropdownMenuGroup = DropdownMenuPrimitive.Group
-const DropdownMenuPortal = DropdownMenuPrimitive.Portal
+interface DropdownMenuProps {
+  children: React.ReactNode
+}
 
-const DropdownMenuContent = React.forwardRef<
-  React.ElementRef<typeof DropdownMenuPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
->(({ className, sideOffset = 4, ...props }, ref) => (
-  <DropdownMenuPrimitive.Portal>
-    <DropdownMenuPrimitive.Content
-      ref={ref}
-      sideOffset={sideOffset}
+interface DropdownMenuTriggerProps {
+  children: React.ReactNode
+  asChild?: boolean
+}
+
+interface DropdownMenuContentProps {
+  children: React.ReactNode
+  align?: 'start' | 'center' | 'end'
+  className?: string
+}
+
+interface DropdownMenuItemProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  children: React.ReactNode
+  variant?: 'default' | 'destructive'
+}
+
+interface DropdownMenuSeparatorProps {
+  className?: string
+}
+
+const DropdownMenuContext = React.createContext<{
+  open: boolean
+  setOpen: (open: boolean) => void
+  triggerRef: React.RefObject<HTMLDivElement | null>
+}>({
+  open: false,
+  setOpen: () => {},
+  triggerRef: { current: null },
+})
+
+export function DropdownMenu({ children }: DropdownMenuProps) {
+  const [open, setOpen] = React.useState(false)
+  const triggerRef = React.useRef<HTMLDivElement>(null)
+  const contentRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    if (!open) return
+
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node
+      const isInsideTrigger = triggerRef.current?.contains(target)
+      const isInsideContent = contentRef.current?.contains(target)
+
+      if (!isInsideTrigger && !isInsideContent) {
+        setOpen(false)
+      }
+    }
+
+    // Use a small delay to prevent immediate close
+    const timer = setTimeout(() => {
+      document.addEventListener('click', handleClickOutside)
+    }, 0)
+
+    return () => {
+      clearTimeout(timer)
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, [open])
+
+  return (
+    <DropdownMenuContext.Provider value={{ open, setOpen, triggerRef }}>
+      <div className="relative inline-block" ref={contentRef}>
+        {children}
+      </div>
+    </DropdownMenuContext.Provider>
+  )
+}
+
+export function DropdownMenuTrigger({ children, asChild }: DropdownMenuTriggerProps) {
+  const { open, setOpen, triggerRef } = React.useContext(DropdownMenuContext)
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setOpen(!open)
+  }
+
+  if (asChild && React.isValidElement(children)) {
+    return (
+      <div ref={triggerRef}>
+        {React.cloneElement(children as React.ReactElement<{ onClick?: React.MouseEventHandler }>, {
+          onClick: handleClick,
+        })}
+      </div>
+    )
+  }
+
+  return (
+    <div ref={triggerRef}>
+      <button onClick={handleClick} type="button">
+        {children}
+      </button>
+    </div>
+  )
+}
+
+export function DropdownMenuContent({ children, align = 'end', className }: DropdownMenuContentProps) {
+  const { open } = React.useContext(DropdownMenuContext)
+
+  if (!open) return null
+
+  return (
+    <div
       className={cn(
-        'z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md',
-        'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+        'absolute z-50 min-w-[160px] overflow-hidden rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg',
+        align === 'start' && 'left-0',
+        align === 'center' && 'left-1/2 -translate-x-1/2',
+        align === 'end' && 'right-0',
+        'top-full mt-1',
         className
       )}
-      {...props}
-    />
-  </DropdownMenuPrimitive.Portal>
-))
-DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName
+      onClick={(e) => e.stopPropagation()}
+    >
+      {children}
+    </div>
+  )
+}
 
-const DropdownMenuItem = React.forwardRef<
-  React.ElementRef<typeof DropdownMenuPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & {
-    inset?: boolean
+export function DropdownMenuItem({ children, className, variant = 'default', onClick, disabled, ...props }: DropdownMenuItemProps) {
+  const { setOpen } = React.useContext(DropdownMenuContext)
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (disabled) return
+    setOpen(false)
+    // Call onClick after closing to ensure state updates properly
+    setTimeout(() => {
+      onClick?.(e)
+    }, 0)
   }
->(({ className, inset, ...props }, ref) => (
-  <DropdownMenuPrimitive.Item
-    ref={ref}
-    className={cn(
-      'relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0',
-      inset && 'pl-8',
-      className
-    )}
-    {...props}
-  />
-))
-DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName
 
-const DropdownMenuSeparator = React.forwardRef<
-  React.ElementRef<typeof DropdownMenuPrimitive.Separator>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>
->(({ className, ...props }, ref) => (
-  <DropdownMenuPrimitive.Separator
-    ref={ref}
-    className={cn('-mx-1 my-1 h-px bg-muted', className)}
-    {...props}
-  />
-))
-DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName
+  return (
+    <button
+      className={cn(
+        'relative flex w-full cursor-pointer select-none items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none transition-colors',
+        variant === 'default' && 'hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
+        variant === 'destructive' && 'text-destructive hover:bg-destructive/10 focus:bg-destructive/10',
+        disabled && 'opacity-50 cursor-not-allowed',
+        className
+      )}
+      onClick={handleClick}
+      type="button"
+      disabled={disabled}
+      {...props}
+    >
+      {children}
+    </button>
+  )
+}
 
-export {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuGroup,
-  DropdownMenuPortal,
+export function DropdownMenuSeparator({ className }: DropdownMenuSeparatorProps) {
+  return <div className={cn('-mx-1 my-1 h-px bg-border', className)} />
 }

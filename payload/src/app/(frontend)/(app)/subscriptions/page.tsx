@@ -92,6 +92,17 @@ export default async function SubscriptionsPage() {
       category: categoryId,
       categoryName: catName,
       categoryColor: categoryColors[catName] || categoryColors.Uncategorized,
+      // Additional fields for edit/duplicate
+      websiteUrl: sub.websiteUrl || undefined,
+      description: sub.description || undefined,
+      promoPrice: sub.promoPrice || undefined,
+      promoEndDate: sub.promoEndDate || undefined,
+      startDate: sub.startDate || undefined,
+      freeTrialEndDate: sub.freeTrialEndDate || undefined,
+      category: categoryId,
+      notes: sub.notes || undefined,
+      tags: sub.tags || undefined,
+      household: typeof sub.household === 'object' ? sub.household?.id : sub.household,
     }
   })
 

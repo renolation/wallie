@@ -1,4 +1,5 @@
 import type { Payload } from 'payload'
+import { calculateNextBillingDate, type BillingCycle } from '../lib/billing'
 
 /**
  * Check for upcoming subscription renewals and create notifications
@@ -158,6 +159,72 @@ export async function checkTrialEndingNotifications(payload: Payload): Promise<{
     return { processed, notificationsCreated }
   } catch (error) {
     console.error('Trial ending notification check error:', error)
+    throw error
+  }
+}
+
+/**
+ * Update expired renewal dates for subscriptions
+ * Finds subscriptions where nextBillingDate is in the past and advances them
+ * using their billingCycle and frequency values.
+ * This should be called daily via cron.
+ */
+export async function updateExpiredRenewalDates(payload: Payload): Promise<{
+  processed: number
+  updated: number
+}> {
+  let processed = 0
+  let updated = 0
+
+  try {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    // Find subscriptions with past billing dates that have autoRenew enabled
+    const expiredSubscriptions = await payload.find({
+      collection: 'subscriptions',
+      where: {
+        nextBillingDate: {
+          less_than: today.toISOString(),
+        },
+        autoRenew: { equals: true },
+      },
+      limit: 500,
+    })
+
+    for (const sub of expiredSubscriptions.docs) {
+      processed++
+
+      if (!sub.nextBillingDate || !sub.billingCycle) {
+        continue
+      }
+
+      const billingCycle = sub.billingCycle as BillingCycle
+      const frequency = sub.frequency || 1
+      const currentNextDate = new Date(sub.nextBillingDate)
+
+      // Calculate the new next billing date
+      const newNextBillingDate = calculateNextBillingDate(
+        currentNextDate,
+        billingCycle,
+        frequency,
+      )
+
+      // Update the subscription
+      await payload.update({
+        collection: 'subscriptions',
+        id: sub.id,
+        data: {
+          nextBillingDate: newNextBillingDate.toISOString(),
+        },
+      })
+
+      updated++
+    }
+
+    return { processed, updated }
+  } catch (error) {
+    console.error('Update expired renewal dates error:', error)
     throw error
   }
 }

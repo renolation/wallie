@@ -110,8 +110,8 @@ function extractDomainFromUrl(url: string): string | null {
   }
 }
 
-interface SubscriptionToEdit {
-  id: number
+interface SubscriptionData {
+  id?: number
   name: string
   logo?: string
   websiteUrl?: string
@@ -120,15 +120,15 @@ interface SubscriptionToEdit {
   currency: string
   billingCycle: string
   frequency: number
-  autoRenew: boolean
-  startDate?: string
-  nextBillingDate?: string
-  freeTrialEndDate?: string
   promoPrice?: number
   promoEndDate?: string
+  startDate: string
+  nextBillingDate?: string
+  freeTrialEndDate?: string
+  autoRenew: boolean
   category?: number | { id: number }
   notes?: string
-  tags?: { tag: string }[]
+  tags?: Array<{ tag?: string | null; id?: string | null }>
   household?: number | { id: number }
 }
 
@@ -136,13 +136,14 @@ interface AddSubscriptionModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
-  subscription?: SubscriptionToEdit | null
+  mode?: 'create' | 'edit'
+  initialData?: SubscriptionData | null
 }
 
-export default function AddSubscriptionModal({ isOpen, onClose, onSuccess, subscription }: AddSubscriptionModalProps) {
-  const isEditMode = !!subscription
+export default function AddSubscriptionModal({ isOpen, onClose, onSuccess, mode = 'create', initialData = null }: AddSubscriptionModalProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [highestStepReached, setHighestStepReached] = useState(0)
+  const isEditMode = mode === 'edit' && initialData !== null
   const [categories, setCategories] = useState<Category[]>([])
   const [popularServices, setPopularServices] = useState<PopularService[]>([])
   const [serviceSearch, setServiceSearch] = useState('')
@@ -168,33 +169,33 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess, subsc
       fetchCategories()
       fetchPopularServices()
 
-      // Pre-fill form data when editing
-      if (subscription) {
-        const categoryId = typeof subscription.category === 'object'
-          ? subscription.category?.id
-          : subscription.category
-        const householdId = typeof subscription.household === 'object'
-          ? subscription.household?.id
-          : subscription.household
+      // Prefill form in edit mode
+      if (isEditMode && initialData) {
+        const categoryId = typeof initialData.category === 'object'
+          ? initialData.category?.id
+          : initialData.category
+        const householdId = typeof initialData.household === 'object'
+          ? initialData.household?.id
+          : initialData.household
 
         setForm({
-          name: subscription.name || '',
+          name: initialData.name || '',
           category: categoryId ? String(categoryId) : '',
-          websiteUrl: subscription.websiteUrl || '',
-          logo: subscription.logo || '',
-          amount: subscription.amount ? String(subscription.amount) : '',
-          currency: subscription.currency || 'USD',
-          billingCycleCount: subscription.frequency ? String(subscription.frequency) : '1',
-          billingCycleUnit: subscription.billingCycle || 'monthly',
-          promoPrice: subscription.promoPrice ? String(subscription.promoPrice) : '',
-          promoEndDate: subscription.promoEndDate ? subscription.promoEndDate.split('T')[0] : '',
-          startDate: subscription.startDate ? subscription.startDate.split('T')[0] : new Date().toISOString().split('T')[0],
-          nextBillingDate: subscription.nextBillingDate ? subscription.nextBillingDate.split('T')[0] : '',
-          freeTrialEndDate: subscription.freeTrialEndDate ? subscription.freeTrialEndDate.split('T')[0] : '',
-          autoRenew: subscription.autoRenew ?? true,
-          description: subscription.description || '',
-          tags: subscription.tags?.map(t => t.tag).join(', ') || '',
-          notes: subscription.notes || '',
+          websiteUrl: initialData.websiteUrl || '',
+          logo: initialData.logo || '',
+          amount: initialData.amount ? String(initialData.amount) : '',
+          currency: initialData.currency || 'USD',
+          billingCycleCount: initialData.frequency ? String(initialData.frequency) : '1',
+          billingCycleUnit: initialData.billingCycle || 'monthly',
+          promoPrice: initialData.promoPrice ? String(initialData.promoPrice) : '',
+          promoEndDate: initialData.promoEndDate ? initialData.promoEndDate.split('T')[0] : '',
+          startDate: initialData.startDate ? initialData.startDate.split('T')[0] : new Date().toISOString().split('T')[0],
+          nextBillingDate: initialData.nextBillingDate ? initialData.nextBillingDate.split('T')[0] : '',
+          freeTrialEndDate: initialData.freeTrialEndDate ? initialData.freeTrialEndDate.split('T')[0] : '',
+          autoRenew: initialData.autoRenew ?? true,
+          description: initialData.description || '',
+          tags: initialData.tags?.map(t => t.tag).filter(Boolean).join(', ') || '',
+          notes: initialData.notes || '',
           household: householdId ? String(householdId) : '',
           memberShares: [],
           enableRenewalReminder: true,
@@ -202,16 +203,16 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess, subsc
           enableContractExpiry: false,
         })
 
-        if (subscription.logo) {
-          setLogoPreview(subscription.logo)
+        if (initialData.logo) {
+          setLogoPreview(initialData.logo)
           setLogoError(false)
         }
 
-        // In edit mode, allow navigation to all steps
+        // Allow navigation to all steps in edit mode
         setHighestStepReached(STEPS.length - 1)
       }
     }
-  }, [isOpen, subscription])
+  }, [isOpen, isEditMode, initialData])
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -345,7 +346,9 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess, subsc
         household: form.household ? parseInt(form.household) : undefined,
       }
 
-      const url = isEditMode ? `/api/subscriptions/${subscription.id}` : '/api/subscriptions'
+      const url = isEditMode && initialData?.id
+        ? `/api/subscriptions/${initialData.id}`
+        : '/api/subscriptions'
       const method = isEditMode ? 'PATCH' : 'POST'
 
       const res = await fetch(url, {
@@ -429,10 +432,10 @@ export default function AddSubscriptionModal({ isOpen, onClose, onSuccess, subsc
               <div>
                 <h1 className="text-xl font-bold">{isEditMode ? 'Edit Subscription' : 'Add New Subscription'}</h1>
                 <p className="text-sm text-muted-foreground">
-                  {currentStepData.id === 'service' && (isEditMode ? 'Update your subscription details' : 'Add a new subscription to track your recurring payments')}
-                  {currentStepData.id === 'pricing' && (isEditMode ? 'Update the pricing details' : 'Set the pricing details for your new recurring payment.')}
-                  {currentStepData.id === 'schedule' && (isEditMode ? 'Update the schedule' : 'Set the schedule for your new subscription')}
-                  {currentStepData.id === 'details' && (isEditMode ? 'Update subscription details' : 'Add details for your new subscription.')}
+                  {currentStepData.id === 'service' && (isEditMode ? 'Update your subscription service details' : 'Add a new subscription to track your recurring payments')}
+                  {currentStepData.id === 'pricing' && (isEditMode ? 'Update the pricing details for your subscription.' : 'Set the pricing details for your new recurring payment.')}
+                  {currentStepData.id === 'schedule' && (isEditMode ? 'Update the schedule for your subscription' : 'Set the schedule for your new subscription')}
+                  {currentStepData.id === 'details' && (isEditMode ? 'Update details for your subscription.' : 'Add details for your new subscription.')}
                   {currentStepData.id === 'reminders' && 'Set up important reminders for your subscription'}
                   {currentStepData.id === 'sharing' && 'Share the subscription with your household members.'}
                 </p>
